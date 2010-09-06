@@ -36,6 +36,8 @@ struct VideoFrame {
   }
   void init(int w, int h, int linesize) {
     int sz = linesize * h;
+    this->w = w, this->h = h;
+    this->linesize = linesize;
     assert(sz > 0);
     frame_data.clear();
     frame_data.resize(sz);
