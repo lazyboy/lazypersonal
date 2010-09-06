@@ -1,0 +1,64 @@
+syntax on
+"source /home/lazyboy/scripts/vim/*
+"set background=dark
+"set nolist
+
+
+function! HighlightTooLongLines()
+  highlight def link RightMargin Error
+  "if &textwidth != 0
+  "  exec 'match RightMargin /\%<' . (&textwidth + 4) . 'v.\%>' . (&textwidth + 2) . 'v/'
+  "endif
+  exec 'match RightMargin /\%<' . 83 . 'v.\%>' . 81 . 'v/'
+endfunction
+
+function! CleverTab()
+   if strpart( getline('.'), 0, col('.')-1 ) =~ '^\s*$'
+      return "\<C-T>"
+   else
+      return "\<C-P>"
+endfunction
+inoremap <Tab> <C-R>=CleverTab()<CR>
+
+function! CleverBackspace()
+   if strpart( getline('.'), 0, col('.')-1 ) =~ '^\s*$'
+      return "\<C-D>"
+   else
+      return "\<C-H>"
+endfunction
+inoremap <C-H> <C-R>=CleverBackspace()<CR>
+inoremap <C-?> <C-R>=CleverBackspace()<CR>
+
+augroup filetypedetect
+au BufNewFile,BufRead * call HighlightTooLongLines()
+augroup END
+
+"try autofolding functions
+function! JsFold()
+  setl foldmethod=syntax
+  setl foldlevelstart=1
+  syn region foldBraces start=/{$/ end=/};$/ transparent fold keepend extend
+
+  function! FoldText()
+    return substitute(getline(v:foldstart), '{.*', '{...}', '')
+  endfunction
+  setl foldtext=FoldText()
+endfunction
+"au FileType javascript call JsFold()
+"au FileType javascript setl fen
+
+"source ~/vim/professional.vim
+
+"autocmd BufWritePre * echo 'Hello world'
+
+
+"cycle thru pane of split windows
+nnoremap <F6> <C-W>w
+nnoremap <S-F6> <C-W>W
+
+set autoindent
+set tabstop=2
+set shiftwidth=2
+set softtabstop=2
+set expandtab
+
