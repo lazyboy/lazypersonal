@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <string>
 #include <cstring>
+#include <png.h>
 
 extern "C" {
 #define INT64_C

@@ -1,0 +1,10 @@
+[user]
+	name = lazyboy
+	email = lazyboybd@gmail.com
+
+[core]
+	editor = vim
+
+[alias]
+  co = checkout
+
