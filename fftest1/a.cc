@@ -99,11 +99,16 @@ private:
 };
 
 
-int main() {
+int main(int argc, char** argv) {
   int i, j, k;
 
+  if (argc < 2) {
+    printf("Usage: %s filename\n", argv[0]);
+    return -1;
+  }
+
   MovieDecoder* m;
-  m = new MovieDecoder("test.avi");
+  m = new MovieDecoder(argv[1]);
   m->foo();
 
   PII dim = m->getDimension();
