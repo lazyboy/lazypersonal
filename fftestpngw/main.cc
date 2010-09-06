@@ -6,6 +6,7 @@
 #include <png.h>
 #include <cassert>
 #include <inttypes.h>
+#include <stdexcept>
 
 extern "C" {
 #define INT64_C
@@ -136,15 +137,9 @@ struct MovieDecoder {
   int getWidth() { return m_pcodec_ctx ? m_pcodec_ctx->width : -1; }
   int getHeight() { return m_pcodec_ctx ? m_pcodec_ctx->height : -1; }
 
-  void foo() {
-    cout << "Testing here only." << endl;
-  }
-
   bool storeVideoPacket() {
-    bool framesAvailable = true;
-    bool frameDecoded = false;
-
-    int num_attempts = 0;
+    bool frames_available = true;
+    bool frame_decoded = false;
 
     if (m_ppacket) {
       av_free_packet(m_ppacket);
@@ -152,32 +147,32 @@ struct MovieDecoder {
     }
     m_ppacket = new AVPacket();
 
-    while(framesAvailable && !frameDecoded && num_attempts < 1000) {
+    int num_attempts = 0;
+    while (frames_available && !frame_decoded && num_attempts < 1000) {
       ++num_attempts;
-      framesAvailable = av_read_frame(m_pfctx, m_ppacket) >= 0;
-      if (framesAvailable) {
-        frameDecoded = m_ppacket->stream_index == m_vstream_idx;
-        if (!frameDecoded) {
+      frames_available = av_read_frame(m_pfctx, m_ppacket) >= 0;
+      if (frames_available) {
+        frame_decoded = m_ppacket->stream_index == m_vstream_idx;
+        if (!frame_decoded) {
           av_free_packet(m_ppacket);
         }
       }
     }
-    return frameDecoded;
+    return frame_decoded;
   }
   bool decodeVideoPacket() {
     if (m_ppacket->stream_index != m_vstream_idx) {
       return false;
     }
     avcodec_get_frame_defaults(m_pframe);
-    int frameFinished;
+    int frame_finished;
 
-    int bytesDecoded = avcodec_decode_video2(
-        m_pcodec_ctx, m_pframe, &frameFinished, m_ppacket);
-    if (bytesDecoded < 0) {
-      puts("Failed to decode vid frame: bytesDecoded < 0");
-      exit(1);
+    int bytes_decoded = avcodec_decode_video2(
+        m_pcodec_ctx, m_pframe, &frame_finished, m_ppacket);
+    if (bytes_decoded < 0) {
+      throw std::logic_error("Failed to decode vid frame: bytes_decoded < 0");
     }
-    return frameFinished > 0;
+    return frame_finished > 0;
   }
 
   // One of the top level functions?
@@ -187,35 +182,113 @@ struct MovieDecoder {
       frameFinished = decodeVideoPacket();
     }
     if (!frameFinished) {
-      diedie("decodeVideoFrame failed, frame not finished.");
+      throw std::logic_error("decodeVideoFrame failed, frame not finished.");
     }
   }
 
-  void generateVideoFrameAndBuffer(int w, int h, PixelFormat pixel_format) {
+  void generateVideoFrameAndBuffer(int w, int h, PixelFormat pixel_format,
+      int seek_pos=-1) {
     decodeVideoFrame();
+
+    // Do seek after one frame is decoded.
+    if (seek_pos != -1) {
+      try {
+        printf("Seeking secs: %d\n", seek_pos);
+        seek(seek_pos);
+        printf("Seeking succesful: %d\n", seek_pos);
+      } catch (exception& e) {
+        cerr << e.what() << ", what to do now?" << endl;
+        throw logic_error("Puzzled");
+      }
+    }
+
     if (m_pframe->interlaced_frame) {
       avpicture_deinterlace(
           (AVPicture*) m_pframe, (AVPicture*) m_pframe, m_pcodec_ctx->pix_fmt,
           m_pcodec_ctx->width, m_pcodec_ctx->height);
     }
 
+/*
     m_pframe = avcodec_alloc_frame();
     int numBytes = avpicture_get_size(pixel_format, w, h);
     m_pframe_buff = reinterpret_cast<uint8_t*>(av_malloc(numBytes));
     avpicture_fill((AVPicture*)m_pframe, m_pframe_buff, pixel_format, w, h);
+*/
+
+    // Instead of directly using m_pframe and m_pframe_buff, use scale and copy
+    // data to new_* and then copy it over to m_pframe and m_pframe_buff.
+    // TODO: Investivate why it is necessary instead of the above commented
+    // block of code.
+    AVFrame* new_pframe = avcodec_alloc_frame();
+    int num_bytes = avpicture_get_size(pixel_format, w, h);
+    uint8_t* new_pframe_buff = reinterpret_cast<uint8_t*>(av_malloc(num_bytes));
+    avpicture_fill((AVPicture*)new_pframe, new_pframe_buff, pixel_format, w, h);
+
+    // Fake scale begin.
+    SwsContext* scale_ctx = sws_getContext(
+        m_pcodec_ctx->width, m_pcodec_ctx->height, m_pcodec_ctx->pix_fmt,
+        m_pcodec_ctx->width, m_pcodec_ctx->height,
+        pixel_format, SWS_BICUBIC, NULL, NULL, NULL);
+    if (!scale_ctx) {
+      throw std::logic_error("Failed to create resize context");
+    }
+
+    sws_scale(scale_ctx, m_pframe->data, m_pframe->linesize, 0,
+        m_pcodec_ctx->height, new_pframe->data, new_pframe->linesize);
+    sws_freeContext(scale_ctx);
+    // Fake scale end.
+
+    av_free(m_pframe);
+    av_free(m_pframe_buff);
+
+    m_pframe = new_pframe;
+    m_pframe_buff = new_pframe_buff;
   }
 
-  void getVideoFrame(VideoFrame& ret) {
+  void getVideoFrame(VideoFrame& ret, int seek_pos=-1) {
     int w = getWidth();
     int h = getHeight();
     printf("W %d, H %d\n", w, h);
     PixelFormat pixel_format = PIX_FMT_RGB24;
-    generateVideoFrameAndBuffer(w, h, pixel_format);
+    generateVideoFrameAndBuffer(w, h, pixel_format, seek_pos);
 
     ret.init(w, h, m_pframe->linesize[0]);
     // Turn this to a member function?
     memcpy((&(ret.frame_data.front())), m_pframe->data[0],
         ret.h * ret.linesize);
+  }
+
+  void seek(int secs) {
+    int64_t tstamp = AV_TIME_BASE * static_cast<int64_t>(secs);
+    printf("tstamp %lld\n", tstamp);
+    if (tstamp < 0) tstamp = 0;
+    int ret = av_seek_frame(m_pfctx, -1, tstamp, 0);
+    if (ret >= 0) {
+      avcodec_flush_buffers(m_pfctx->streams[m_vstream_idx]->codec);
+    } else {
+      diedie("Seeking failed");
+    }
+
+    int keyfr_attemps = 0;
+    bool got_frame = false;
+    do {
+      int kount = 0;
+      got_frame = false;
+      while (!got_frame && kount < 20) {
+        storeVideoPacket();
+        try {
+          got_frame = decodeVideoPacket();
+        } catch (std::logic_error&) {
+          ;
+        }
+        ++kount;
+      }
+      ++keyfr_attemps;
+    } while((!got_frame || !m_pframe->key_frame) && keyfr_attemps < 200);
+
+    if (!got_frame) {
+      throw logic_error("Seeking failed (2)");
+    }
   }
 
 private:
@@ -275,7 +348,7 @@ struct Thumbnailer {
     MovieDecoder* movie_decoder;
     movie_decoder = new MovieDecoder(filename);
     VideoFrame video_frame;
-    movie_decoder->getVideoFrame(video_frame);
+    movie_decoder->getVideoFrame(video_frame, seek_pos);
 
     int linesize = video_frame.linesize;
     int w = video_frame.w;
@@ -302,18 +375,17 @@ int main(int argc, char** argv) {
 
   MovieDecoder* m;
   m = new MovieDecoder(argv[1]);
-  m->foo();
 
   PII dim = m->getDimension();
   printf("Movie dimension: %d, %d\n", dim.first, dim.second);
   printf("Movie duration: %ds\n", m->getDurationSecs());
 
   if (argc < 3) {
-    printf("Usage: %s filename outputpng\n", argv[0]);
+    printf("Usage: %s filename outputpng [seek_seconds<int>]\n", argv[0]);
     return -1;
   }
   Thumbnailer* thumb;
-  thumb->generateThumbnail(argv[1], argv[2]);
+  thumb->generateThumbnail(argv[1], argv[2], argc >= 4 ? atoi(argv[3]): -1);
   return 0;
 }
 
