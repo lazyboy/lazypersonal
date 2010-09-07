@@ -329,9 +329,9 @@ struct PngWriter {
     if (setjmp(png_jmpbuf(m_ppng))) {
       diedie("Wring png file failed");
     }
-	  png_set_IHDR(m_ppng, m_pinfo, w, h, 8,
-				PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
-				PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+    png_set_IHDR(m_ppng, m_pinfo, w, h, 8,
+        PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
+        PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
     png_set_rows(m_ppng, m_pinfo, data);
     png_write_png(m_ppng, m_pinfo, 0, NULL);	
   }
