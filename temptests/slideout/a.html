@@ -1,0 +1,77 @@
+<html>
+  <head>
+    <title>testing page</title>
+
+<script type="text/javascript">
+  function $(id) { return document.getElementById(id); }
+  function _log(msg) {
+    if (window['console'] && window['console']['log']) {
+      window['console']['log'](msg);
+    }
+    $('logdiv').innerHTML += '<div>' + msg + '</div>';
+  }
+
+  function demo() {
+    _log('start demo');
+    var mydiv = $('remaining');
+    //mydiv.style.height = '500px';
+//    mydiv.style.display = '';
+//    mydiv.style.removeProperty('height');
+    var reminnerdiv = $('reminner');
+    //reminnerdiv.style.height = '100%';
+    //reminnerdiv.style.height = '120px';
+    //reminnerdiv.style.height = '';
+    //reminnerdiv.style.removeProperty('height');
+    reminnerdiv.style.display = '';
+//    reminnerdiv.style.position = 'relative';
+    _log('done demo');
+  }
+</script>
+
+<style type="text/css">
+.logdiv {
+  font-size: 10px;
+  color: blue;
+}
+.outer {
+  position: relative;
+}
+.row {
+  height: 40px;
+  background-color: #eee;
+}
+.first {
+  color: blue;
+}
+.rhide {
+  position: relative;
+}
+.remaining {
+/*  -webkit-transition: all ease-out 0.5s;*/
+  position: relative;
+}
+.reminner {
+  -webkit-transition: all ease-out 4s;
+}
+</style>
+  </head>
+  <body>
+    <div>
+      <div class="outer">
+        <div class="row first" onclick="demo();">
+	  First row.
+	</div>
+	<div id="remaining" class="remaining" style="overflow: hidden;">
+	  <div id="reminner" class="reminner" style="display: none;">
+	  <div class="row rhide">Test row1</div>
+	  <div class="row rhide">Test row2</div>
+	  <div class="row rhide">Test row3</div>
+	  </div>
+	</div>
+      </div>
+    </div>
+    <div>
+    </div>
+    <div id="logdiv" class="logdiv"></div>
+  </body>
+</html>
