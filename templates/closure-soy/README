@@ -1,0 +1,11 @@
+// Author: lazyboy (lazyboybd at gmail d0t com)
+
+Minimal template for compiling closure soy files to js files.
+Run soy/compilesoy.py
+
+Todo:
+1. You need to copy soy to js compiler under soy/ directory (SoyToJsSrcCompiler.jar)
+
+All soy files need to be compiled would go under soy/*.soy
+The compiled js outputs for soy would be written under soy/gen/ directory.
+
