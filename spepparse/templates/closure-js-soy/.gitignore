@@ -1,0 +1,3 @@
+# Ignore jar files
+compile/compiler.jar
+soy/SoyToJsSrcCompiler.jar
