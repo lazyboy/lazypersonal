@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # Author: lazyboy (lazyboybd at gmail d0t com)
-# Compiles soy using closure library, run this from this file's own dir.
+# Compiles javascript + soy using closure library, run this from this file's own dir.
 # See README in the top level dir for info on using it.
 import getopt, sys, os
 import shutil
