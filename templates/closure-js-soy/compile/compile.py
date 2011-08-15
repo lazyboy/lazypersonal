@@ -53,7 +53,7 @@ def main(argv):
       " -o script" + \
       ' --namespace="douche.main"' + \
       " -c compiler.jar" + \
-      " > " + final_js_output_file
+      " --output_file=" + final_js_output_file
   print("Executing 2: ", command)
   os.system(command)
   return
