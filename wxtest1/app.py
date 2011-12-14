@@ -1,13 +1,15 @@
-from wrapper import GuiWrapper
 import wx
-from controller import Controller
 import sys
-import config
+import bridge, config, controller, wrapper
 
 c = None
+b = None
 def initFactory():
   global c
-  c = Controller()
+  global b
+  c = controller.Controller()
+  b = bridge.Bridge()
+  b.registerController(c)
 
 def main():
   # Make them robust
@@ -17,7 +19,12 @@ def main():
   initFactory()
 
   app = wx.App()
-  frame = GuiWrapper(None, c)
+  frame = wrapper.GuiWrapper(None, c)
+  b.registerGui(frame)
+
+  # Fudge this! Very naive dude, very naive!
+  frame.setBridge(b)
+  c.setBridge(b)
 
   frame.listCtrl.InsertColumn(0, 'hi0')
   frame.listCtrl.InsertColumn(1, 'hi1')

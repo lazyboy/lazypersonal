@@ -9,6 +9,7 @@
 ## WARNING: EDITED ALREADY :P
 
 import wx
+import sys
 
 ###########################################################################
 ## Class GuiFrame
@@ -59,11 +60,36 @@ class GuiFrame ( wx.Frame ):
   def __del__( self ):
     pass
   
+  def setBridge(self, b):
+    self.bridge = b
+
+  def onCustomEvent(self, event, args):
+    if 'showListItems' == event:
+      self.listCtrl.ClearAll()
+      self.listCtrl.DeleteAllColumns()
+
+      # TODO(I.A.): Proper column size.
+      self.listCtrl.InsertColumn(0, 'idx')
+      self.listCtrl.InsertColumn(1, 'name')
+      self.listCtrl.InsertColumn(2, 'size')
+      print 'Total showListItems: ', len(args)
+
+      idx = 1
+      for fileinfo in args:
+        pos = self.listCtrl.InsertStringItem(sys.maxint, str(idx))
+        self.listCtrl.SetStringItem(pos, 1, fileinfo.name)
+        self.listCtrl.SetStringItem(pos, 2, str(fileinfo.size))
+        idx = idx + 1
+    else:
+      print 'Unknown event in Frame:', event
+    return
   
   # Virtual event handlers, overide them in your derived class
   def OnTextSearch( self, event ):
     print 'OnTextSearch'
-    self.controller.onSearchItem(event, self.textCtrlSearch.GetValue())
+    value = self.textCtrlSearch.GetValue()
+    self.bridge.sendToController('onSearchItem', value)
+    self.controller.onSearchItem(event, value)
     event.Skip()
   
   def OnBrowseClick( self, event ):
