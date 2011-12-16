@@ -13,7 +13,7 @@ class Controller:
   def setBridge(self, b):
     self.bridge = b
 
-  def onSearchItem(self, event, query):
+  def onSearchItem_(self, event, query):
     print 'query is', query
     if config.Config.DEBUG:
       if '' == query:
@@ -52,7 +52,7 @@ class Controller:
 
   def onCustomEvent(self, event, args):
     if 'onSearchItem' == event:
-      self.onSearchItem(None, args)
+      self.onSearchItem_(None, args)
     else:
       print 'Unknown event in Controller:', event
     return

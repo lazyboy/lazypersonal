@@ -19,7 +19,7 @@ class GuiFrame ( wx.Frame ):
   KEYCODE_J = 106
   KEYCODE_K = 107
   
-  def __init__( self, parent, controller):
+  def __init__( self, parent):
     wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( 500,346 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
     
     self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
@@ -58,8 +58,6 @@ class GuiFrame ( wx.Frame ):
 
     self.listCtrl.Bind(wx.EVT_CHAR, self.onChar)
 
-    # Custom params
-    self.controller = controller
   
   def __del__( self ):
     pass
@@ -126,7 +124,6 @@ class GuiFrame ( wx.Frame ):
     print 'OnTextSearch'
     value = self.textCtrlSearch.GetValue()
     self.bridge.sendToController('onSearchItem', value)
-    self.controller.onSearchItem(event, value)
     event.Skip()
   
   def OnBrowseClick( self, event ):

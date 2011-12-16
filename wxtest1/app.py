@@ -19,7 +19,7 @@ def main():
   initFactory()
 
   app = wx.App()
-  frame = wrapper.GuiWrapper(None, c)
+  frame = wrapper.GuiWrapper(None)
   b.registerGui(frame)
 
   # Fudge this! Very naive dude, very naive!
