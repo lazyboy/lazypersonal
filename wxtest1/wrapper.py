@@ -5,6 +5,8 @@ import controller
 # TODO(lazyboy): Use proportional splitter window:
 # http://wiki.wxpython.org/ProportionalSplitterWindow
 
+# TODO(lazyboy): Multi select on listCtrl?
+
 class GuiWrapper (GuiFrame):
   KEYCODE_J = 106
   KEYCODE_K = 107
