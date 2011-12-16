@@ -16,6 +16,8 @@ import sys
 ###########################################################################
 
 class GuiFrame ( wx.Frame ):
+  KEYCODE_J = 106
+  KEYCODE_K = 107
   
   def __init__( self, parent, controller):
     wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( 500,346 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
@@ -54,12 +56,14 @@ class GuiFrame ( wx.Frame ):
     self.buttonBrowse.Bind( wx.EVT_BUTTON, self.OnBrowseClick )
     self.buttonGo.Bind( wx.EVT_BUTTON, self.OnGoClick )
 
+    self.listCtrl.Bind(wx.EVT_CHAR, self.onChar)
+
     # Custom params
     self.controller = controller
   
   def __del__( self ):
     pass
-  
+
   def setBridge(self, b):
     self.bridge = b
 
@@ -83,6 +87,39 @@ class GuiFrame ( wx.Frame ):
     else:
       print 'Unknown event in Frame:', event
     return
+
+  def onChar(self, event):
+    #print 'onChar', event.GetKeyCode()
+    keyCode = event.GetKeyCode()
+    if keyCode == GuiFrame.KEYCODE_J: # j
+      #print 'go Down'
+      self.moveSelection(isUp = False)
+    elif keyCode == GuiFrame.KEYCODE_K:
+      #print 'go Up'
+      self.moveSelection(isUp = True)
+    else:
+      # Tip: be sure to call event.Skip() for events that you don't process in
+      # key event function, otherwise menu shortcuts may cease to work under
+      # Windows.
+      event.Skip()
+
+  def moveSelection(self, isUp = False):
+    idx = self.listCtrl.GetFirstSelected()
+    #print 'GetFirstSelected:', idx
+    nidx = 0
+    n = self.listCtrl.GetItemCount()
+    if idx != -1:
+      nidx = (idx - 1) if isUp else (idx + 1)
+      if nidx == -1:
+        nidx = 0
+      elif nidx >= n:
+        nidx = n - 1
+      self.listCtrl.Select(idx, on = False)
+    #print 'nextIdx:', nidx
+    if nidx != -1:
+      self.listCtrl.Select(nidx, on = True)
+      self.listCtrl.Focus(nidx)
+  
   
   # Virtual event handlers, overide them in your derived class
   def OnTextSearch( self, event ):
