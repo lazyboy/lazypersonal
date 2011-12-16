@@ -12,12 +12,16 @@ class GuiWrapper (GuiFrame):
 
   def __init__(self, parent):
     GuiFrame.__init__(self, parent)
-    # So we can track J/K
-    self.listCtrl.Bind(wx.EVT_CHAR, self.onChar)
+    # So we can track J/K.
+    self.listCtrl.Bind(wx.EVT_CHAR, self.onChar_)
+    # So we know what is selected.
+    # TODO(lazyboy): Too many calls when press and hold up/down, if the info
+    # fetching gets costly (which eventually will), do threading.
+    self.listCtrl.Bind(wx.EVT_LIST_ITEM_SELECTED, self.onListCtrlItemSelected_)
 
-    # Set focus on text box.
+    # Initially set focus on text box.
     self.textCtrlSearch.SetFocus()
-  
+
   def setBridge(self, b):
     self.bridge = b
 
@@ -38,12 +42,21 @@ class GuiWrapper (GuiFrame):
         self.listCtrl.SetStringItem(pos, 1, fileinfo.name)
         self.listCtrl.SetStringItem(pos, 2, str(fileinfo.size))
         idx = idx + 1
+    elif 'showItemDetails' == event:
+      fileinfoItem = args
+      tmp = 'File:\n%s\nSize: %d bytes' % (fileinfoItem.getFullName(), fileinfoItem.size)
+      self.labelPreview1.SetLabel(tmp)
     else:
       print 'Unknown event in Frame:', event
     return
 
-  def onChar(self, event):
-    #print 'onChar', event.GetKeyCode()
+  def onListCtrlItemSelected_(self, event):
+    #print 'onListCtrlItemSelected_!'
+    idx = event.GetIndex()
+    self.bridge.sendToController('onItemSelected', idx)
+  
+  def onChar_(self, event):
+    #print 'onChar_', event.GetKeyCode()
     keyCode = event.GetKeyCode()
     if keyCode == GuiWrapper.KEYCODE_J: # j
       #print 'go Down'

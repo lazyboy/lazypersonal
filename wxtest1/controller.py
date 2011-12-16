@@ -13,6 +13,19 @@ class Controller:
   def setBridge(self, b):
     self.bridge = b
 
+  def onCustomEvent(self, event, args):
+    if 'onSearchItem' == event:
+      self.onSearchItem_(None, args)
+    elif 'onItemSelected' == event:
+      self.onItemSelected_(args)
+    else:
+      print 'Unknown event in Controller:', event
+    return
+
+  def onItemSelected_(self, idx):
+    fileinfoItem = self.retList[idx]
+    self.bridge.sendToGui('showItemDetails', fileinfoItem)
+
   def onSearchItem_(self, event, query):
     print 'query is', query
     if config.Config.DEBUG:
@@ -24,7 +37,7 @@ class Controller:
       return
 
     # TODO(I.A): Don't do this altogether, batch and thread.
-    retList = []
+    self.retList = []
     idx = 1
     for root, dirs, files in os.walk(query):
       for name in files:
@@ -38,22 +51,15 @@ class Controller:
         f = structs.FileInfo().setSize(size).setDir(root).setName(name)
         if Controller.filter(f):
           #print '%04d: %d bytes %s' % (idx, size, fullPath)
-          retList.append(f)
+          self.retList.append(f)
         idx = idx + 1
 
     # Send to gui
-    self.bridge.sendToGui('showListItems', retList)
+    self.bridge.sendToGui('showListItems', self.retList)
     return
 
   @staticmethod
   def filter(fileinfo):
     # TODO(I.A): Proper filtering.
     return fileinfo.size > 10 * 1000
-
-  def onCustomEvent(self, event, args):
-    if 'onSearchItem' == event:
-      self.onSearchItem_(None, args)
-    else:
-      print 'Unknown event in Controller:', event
-    return
 
