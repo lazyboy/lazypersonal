@@ -2,9 +2,13 @@ from noname import GuiFrame
 import sys, wx
 import controller
 
+# TODO(lazyboy): Use proportional splitter window:
+# http://wiki.wxpython.org/ProportionalSplitterWindow
+
 class GuiWrapper (GuiFrame):
   KEYCODE_J = 106
   KEYCODE_K = 107
+  KEYCODE_SLASH_SEARCH = 47
 
   def __init__(self, parent):
     GuiFrame.__init__(self, parent)
@@ -47,6 +51,8 @@ class GuiWrapper (GuiFrame):
     elif keyCode == GuiWrapper.KEYCODE_K:
       #print 'go Up'
       self.moveSelection(isUp = True)
+    elif keyCode == GuiWrapper.KEYCODE_SLASH_SEARCH:
+      self.textCtrlSearch.SetFocus();
     else:
       # Tip: be sure to call event.Skip() for events that you don't process in
       # key event function, otherwise menu shortcuts may cease to work under
