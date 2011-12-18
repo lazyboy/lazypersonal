@@ -1,0 +1,8 @@
+!
+! This is an `xmodmap' input file for 
+!   PC 105 key, wide Delete, tall Enter (XFree86; US) keyboards.
+! Automatically generated on Sun Oct  9 16:12:05 2011 by lazyboy with
+! XKeyCaps 2.47; Copyright (c) 1991-1999 Jamie Zawinski; 2005-2006 Christoph Berg.
+! http://www.jwz.org/xkeycaps/
+!
+keycode 0x5E =	Shift_L	NoSymbol	Shift_L
