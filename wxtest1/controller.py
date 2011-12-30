@@ -1,8 +1,6 @@
 import os
 import config, structs
 
-global DEBUG
-
 class Controller:
   def __init__(self):
     #self.fileSearcher = FileSearcher()
