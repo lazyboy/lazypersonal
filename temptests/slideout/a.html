@@ -14,16 +14,8 @@
   function demo() {
     _log('start demo');
     var mydiv = $('remaining');
-    //mydiv.style.height = '500px';
-//    mydiv.style.display = '';
-//    mydiv.style.removeProperty('height');
     var reminnerdiv = $('reminner');
-    //reminnerdiv.style.height = '100%';
-    //reminnerdiv.style.height = '120px';
-    //reminnerdiv.style.height = '';
-    //reminnerdiv.style.removeProperty('height');
-    reminnerdiv.style.display = '';
-//    reminnerdiv.style.position = 'relative';
+    mydiv.style.height = reminnerdiv.offsetHeight + 'px';
     _log('done demo');
   }
 </script>
@@ -40,37 +32,32 @@
   height: 40px;
   background-color: #eee;
 }
-.first {
-  color: blue;
-}
-.rhide {
-  position: relative;
-}
 .remaining {
-/*  -webkit-transition: all ease-out 0.5s;*/
   position: relative;
+  -webkit-transition: all ease-out 0.9s; 
 }
 .reminner {
-  -webkit-transition: all ease-out 4s;
 }
 </style>
   </head>
   <body>
     <div>
       <div class="outer">
-        <div class="row first" onclick="demo();">
-	  First row.
-	</div>
-	<div id="remaining" class="remaining" style="overflow: hidden;">
-	  <div id="reminner" class="reminner" style="display: none;">
-	  <div class="row rhide">Test row1</div>
-	  <div class="row rhide">Test row2</div>
-	  <div class="row rhide">Test row3</div>
-	  </div>
-	</div>
+        <div class="row" onclick="demo();">
+      	  First row.
+	      </div>
+        <div id="remaining" class="remaining" style="height: 0; overflow: hidden;">
+          <div id="reminner" class="reminner">
+            <div class="row">Test row1</div>
+            <div class="row">Test row2</div>
+            <div class="row">Test row3</div>
+          </div>
+        </div>
       </div>
     </div>
+
     <div>
+      Bogus bottom content
     </div>
     <div id="logdiv" class="logdiv"></div>
   </body>

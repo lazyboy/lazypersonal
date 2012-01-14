@@ -8,3 +8,9 @@
 [alias]
   co = checkout
 
+[color]
+  branch = auto
+  diff = auto
+  interactive = auto
+  status = auto
+

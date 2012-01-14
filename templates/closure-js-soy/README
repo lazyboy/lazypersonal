@@ -1,0 +1,16 @@
+// Author: lazyboy (lazyboybd at gmail d0t com)
+
+Minimal template for building and running closure javascript + soy.
+A python wrapper script (compile.py) is added to show all the necessary bits, the script must be run from the directory of the file itself.
+We use 'Closure Builder' (http://code.google.com/closure/library/docs/closurebuilder.html) to compile the javascript.
+
+Todo:
+1. You need to copy closure compiler jar under compile/ directory (compiler.jar, download from: http://closure-compiler.googlecode.com/files/compiler-latest.zip)
+2. You need to copy soy to js compiler under soy/ directory (SoyToJsSrcCompiler.jar)
+3. You need to download closure library source and fix the compile.py script's CLOSURE_BASE var to point to it.  
+
+Note:
+All js files need to be compiled would go under js/*.js or js/*[/*]....js
+All soy files need to be compiled would go under soy/*.soy
+The compiled output would be compiled.js on the top level.
+

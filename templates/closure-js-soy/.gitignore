@@ -1,0 +1,6 @@
+# Ignore jar files
+compile/compiler.jar
+soy/SoyToJsSrcCompiler.jar
+# Generated files and dirs
+compiled.js
+soy/gen/

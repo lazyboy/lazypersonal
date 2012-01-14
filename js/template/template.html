@@ -10,55 +10,19 @@ body {
   margin: 0;
 }
 </style>
+<script type="text/javascript" src="a.js"></script>
 
-<script type="text/javascript">
-function $(id) { return document.getElementById(id); }
-var alerted = false;
-function _log(message) {
-  if (!window['console'] || !window['console']['log']) {
-    if (!alerted) {
-      alerted = true;
-      alert('not loggable browser: ' + message);
-    }
-    return;
-  }
-  window['console']['log'](message);
-}
-function _log_to_div(message) {
-  $('logdiv').innerHTML += message;
-}
-
-lb = {};
-lb.util = {};
-
-lb.util.getProperties = function(obj) {
-  var ret = '';
-  for (var elem in obj) {
-    ret += elem + ', ';
-  }
-  return ret;
-};
-
-
-// Add bind to functions.
-Function.prototype.bind = function(scope) {
-  var thisFunc = this;
-  var boundFunc = function() {
-    thisFunc.apply(scope, arguments);
-  };
-  return boundFunc;
-};
-    </script>
   </head>
   <body>
     <div id="logdiv" style="font-size: 13px; color: red; border 1px solid gray;">Logs<br></div>
 
 <script>
   lb.doDemo = function() {
+    _log_to_div(+new Date);
+    _log_to_div('abacus', 'batman', 123);
   };
   lb.doDemo();
 </script>
-
 
   </body>
 </html>
