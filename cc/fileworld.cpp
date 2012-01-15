@@ -1,6 +1,6 @@
-// Sample solution for http://www dot ferozeh.com dot Interviews slash misc slah imo.aspx
+// Sample solution for http://www dot ferozeh.com slash Interviews slash misc slah imo.aspx
 // try2: Read each file at most two times, at most two files open at a time.
-// W = max_number_of_words_in_file, W0 = num_words_in_first_file, O(W0lgWO + lgW0 + Sum|W|)
+// W = max_number_of_words_in_file, W0 = num_words_in_first_file, O(W0lgWO + lgW0 * Sum|W|)
 // lazyboybd -= at =- gmail -= dot =- com
 #include <iostream>
 #include <stdio.h>
