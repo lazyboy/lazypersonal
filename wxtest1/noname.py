@@ -52,11 +52,14 @@ class GuiFrame ( wx.Frame ):
 		self.m_panel4.Layout()
 		bSizer12.Fit( self.m_panel4 )
 		self.m_panel5 = wx.Panel( self.splitterWindow, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-		bSizer13 = wx.BoxSizer( wx.HORIZONTAL )
+		bSizer13 = wx.BoxSizer( wx.VERTICAL )
 		
 		self.labelPreview1 = wx.StaticText( self.m_panel5, wx.ID_ANY, u"Foo", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.labelPreview1.Wrap( -1 )
 		bSizer13.Add( self.labelPreview1, 0, wx.ALL, 5 )
+		
+		self.m_panelDetails = wx.Panel( self.m_panel5, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		bSizer13.Add( self.m_panelDetails, 1, wx.EXPAND |wx.ALL, 5 )
 		
 		self.m_panel5.SetSizer( bSizer13 )
 		self.m_panel5.Layout()
