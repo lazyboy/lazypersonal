@@ -1,0 +1,6 @@
+js->qt call:
+WebFrame.addToJavaScriptWindowObject(QString("ClassName"), this);
+connect(WebFrame, SIGNAL(javaScriptWindowObjectCleared(), this, ...) // reattached if detached.
+ref: http://blogs.kde.org/node/4008
+
+qt->js call:
