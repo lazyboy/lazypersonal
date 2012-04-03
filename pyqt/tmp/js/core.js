@@ -1,0 +1,3 @@
+var lazy;
+
+lazy = lazy || {};
