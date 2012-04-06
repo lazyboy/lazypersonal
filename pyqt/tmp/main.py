@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-#ref: http://www.developer.nokia.com/Community/Wiki/CS001495_-_Display_local_web_page_with_Qt_WebKit
-
 import sys
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtWebKit import *
-
 from PyQt4 import QtCore
+from pak import dir_scan
+from pak import config
 
 class TWebView(QWebView):
   def __init__(self, parent = None):
@@ -46,36 +45,30 @@ class JsBridge(QtCore.QObject):
     self._webview.testDownStream()
     return 'msg-returned-from-upstream'
 
+def run():
+  app = QApplication(sys.argv)
+  web = TWebView()
+  curDir = QDir.current()
+  curPath = curDir.filePath('js/index.html')
+  print('curPath %s' % curPath)
+  qq = QUrl.fromLocalFile(curPath)
+  web.load(qq)
 
-app = QApplication(sys.argv)
-web = TWebView()
-#web.load(QUrl("http://google.pl"))
+  # setup logger
+  c = config.Config()
 
-# 1. Opens from py path
-#baseq = QApplication.applicationDirPath();
-#qq = QUrl.fromLocalFile(QDir.toNativeSeparators(baseq + '/js/index.html'))
-#print('hello %d' % qq.isLocalFile())
+  # DirScan test
+  ds = dir_scan.DirScan()
+  r = ds.scan('')
+  print('printing file stats')
+  if r != None:
+    for el in r:
+      print('%dbytes, %s' % (el.size, el.getFullName()))
+  else:
+    print('None returned')
 
-# 2. Opens Current dir/path             	
-curDir = QDir.current()
-curPath = curDir.filePath('js/index.html')
-print('curPath %s' % curPath)
-qq = QUrl.fromLocalFile(curPath)
+  web.show()
+  sys.exit(app.exec_())
 
-web.load(qq)
-
-# 3. Opening raw string as html.
-#html = '<body>raw write</body>'
-#web.setHtml(html, QtCore.QUrl('qrc:/')) #works
-
-#web.show()
-
-## 1. Downstream test.
-# See TWebView.testDownStream.
-
-## 2. Upstream test.
-# See JsBridge.receive
-
-web.show()
-
-sys.exit(app.exec_())
+if __name__ == '__main__':
+  run()
