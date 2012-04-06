@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import sys
+import sys, logging
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtWebKit import *
@@ -23,27 +23,50 @@ class TWebView(QWebView):
         '__lazy_py_void_connection("Hello from python2")')
     return
 
+class DownStreamConnection:
+  def __init__(self, page):
+    self._page = page
+
+  def send(self, t, jsonStr):
+    page.mainFrame().evaluateJavaScript(
+        '__lazy_py_listener(%d, "%s")' % (t, jsonStr))
+
 class TWebPage(QWebPage):
   def __init__(self, parent = None):
     QWebPage.__init__(self, parent)
+    self._logger = logging.getLogger('TWebPage')
     return
 
   def javaScriptConsoleMessage(self, message, lineNumber, sourceId):
     #qDebug(message)
-    print('[console]: %s, line %d, sourceId %s' % (message, lineNumber, sourceId))
+    self._logger.debug('[console]: %s, line %d, sourceId %s' % (message, lineNumber, sourceId))
     return
 
 class JsBridge(QtCore.QObject):
   def __init__(self, parent, webview):
     QtCore.QObject.__init__(self, parent)
     self._webview = webview
+    self._logger = logging.getLogger('JsBridge')
 
   # QString receive(QString) {}
   @QtCore.pyqtSlot(str, result=str)
   def receive(self, msg):
-    print('[py] %s' % msg)
+    self._logger.debug('[py] %s' % msg)
     self._webview.testDownStream()
     return 'msg-returned-from-upstream'
+
+  # QString fromDownstream(int, {})
+  @QtCore.pyqtSlot(int, QVariant, result=str)
+  def fromDownstream(self, t, obj):
+    if 1 == t:
+      self._logger.debug('t value is ONE!')
+    else:
+      self._logger.debug('t value something else: %s' % t)
+    self._logger.debug('obj is %s' % str(obj))
+
+    for key in obj.keys():
+      val = obj[key]
+      self._logger.debug('key %s, value %s' % (key, val))
 
 def run():
   app = QApplication(sys.argv)
