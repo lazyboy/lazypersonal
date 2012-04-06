@@ -8,7 +8,7 @@ class DirScan:
     self._logger = logging.getLogger('DirScan')
     return
 
-  def scan(self, query):
+  def scan(self, query, cb):
     self._logger.debug('query is %s' % query)
     if config.Config.DEBUG:
       if '' == query:
@@ -39,6 +39,12 @@ class DirScan:
           self.retList.append(f)
         idx = idx + 1
 
+        # DEBUG only
+        if idx > 10:
+          cb(self.retList)
+          return self.retList
+
+    cb(self.retList)
     return self.retList
 
   @staticmethod
