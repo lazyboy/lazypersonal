@@ -11,9 +11,11 @@ lazy.render = function() {
 };
 
 lazy.onUpstreamEvent = function(t, jsonStr) {
+  window.console.log('*******onUpstreamEvent')
   //var obj = eval(jsonStr);
   if (t == 1) {
-    lazy.demoRender(jsonStr);
+    window.console.log('jsonStr is: ' + jsonStr);
+    lazy.demoRenderList(jsonStr);
   }
 };
 
@@ -45,6 +47,18 @@ lazy.demo = function() {
 
 lazy.demoRender = function(str) {
   lazy.util.$(lazy.RENDER_DIV_ID).innerHTML += '<div>' + str + '</div>';
+};
+
+lazy.demoRenderList = function(jsonStr) {
+  var ar = eval(jsonStr);
+  var r = '';
+  for (var i = 0; i < ar.length; ++i) {
+    var el = ar[i];
+    r += '<div style="background-color: black; color: white">';
+    r += 'name: ' + el['name'];
+    r += '</div>';
+  }
+  lazy.demoRender(r);
 };
 
 // Yet to pass py param.

@@ -6,30 +6,38 @@ from PyQt4.QtWebKit import *
 from PyQt4 import QtCore
 from pak import dir_scan
 from pak import config
+from pak import structs
 
 class TWebView(QWebView):
   def __init__(self, parent = None):
     QWebView.__init__(self, parent)
-    self._jsBridge = JsBridge(self, self)
+    self.jsBridge = JsBridge(self, self)
     self.setPage(TWebPage())
     self.connect(self.page().mainFrame(),
         SIGNAL('javaScriptWindowObjectCleared()'), self.getJsBridge)
 
   def getJsBridge(self):
-    self.page().mainFrame().addToJavaScriptWindowObject('_abacus', self._jsBridge)
+    self.page().mainFrame().addToJavaScriptWindowObject('_abacus', self.jsBridge)
 
   def testDownStream(self):
     self.page().mainFrame().evaluateJavaScript(
         '__lazy_py_void_connection("Hello from python2")')
     return
 
-class DownStreamConnection:
-  def __init__(self, page):
-    self._page = page
+class DownstreamConnection:
+  def __init__(self, webview):
+    self._webview = webview
+    self._logger = logging.getLogger('DownstreamConnection')
 
   def send(self, t, jsonStr):
-    page.mainFrame().evaluateJavaScript(
-        '__lazy_py_listener(%d, "%s")' % (t, jsonStr))
+    mystr = '__lazy_py_listener(%d, "%s")' % (t, jsonStr)
+    self._logger.debug('\n\nsend: %s' % mystr)
+    #self._webview.page().mainFrame().evaluateJavaScript(
+    #    '__lazy_py_listener(%d, "%s")' % (t, jsonStr))
+    self._webview.page().mainFrame().evaluateJavaScript(
+        #'__lazy_py_listener(1, "2222")')
+        #'__lazy_py_void_connection("3333")')
+        '__lazy_py_listener(1, \'%s\')' % jsonStr)
 
 class TWebPage(QWebPage):
   def __init__(self, parent = None):
@@ -47,6 +55,7 @@ class JsBridge(QtCore.QObject):
     QtCore.QObject.__init__(self, parent)
     self._webview = webview
     self._logger = logging.getLogger('JsBridge')
+    self._sender = DownstreamConnection(self._webview)
 
   # QString receive(QString) {}
   @QtCore.pyqtSlot(str, result=str)
@@ -68,6 +77,26 @@ class JsBridge(QtCore.QObject):
       val = obj[key]
       self._logger.debug('key %s, value %s' % (key, val))
 
+    def cb2(filelist):
+      self._logger.debug('cb2 send down')
+      self.toDownstream(1, filelist)
+
+    if self._scanner != None:
+      self._logger.debug('send to scanner')
+      self._scanner.scan(obj['value'], cb2)
+
+  def registerScanner(self, scanner):
+    self._scanner = scanner
+
+  def toDownstream(self, t, objAr):
+    jsonStr = '[';
+    for obj in objAr:
+      jsonStr += structs.FileInfoEncoder().encode(obj) + ','
+    jsonStr += ']';
+    self._logger.debug('json: ' + jsonStr)
+    self._sender.send(t, jsonStr)
+    print('todo down')
+
 def run():
   app = QApplication(sys.argv)
   web = TWebView()
@@ -80,9 +109,18 @@ def run():
   # setup logger
   c = config.Config()
 
+  def cb(filelist):
+    #print('hi')
+    web.jsBridge.toDownstream(1, filelist)
+
+  web.show()
+
   # DirScan test
   ds = dir_scan.DirScan()
-  r = ds.scan('')
+  # ugly as hell.
+  web.jsBridge.registerScanner(ds)
+
+  r = ds.scan('', cb)
   print('printing file stats')
   if r != None:
     for el in r:
@@ -90,7 +128,6 @@ def run():
   else:
     print('None returned')
 
-  web.show()
   sys.exit(app.exec_())
 
 if __name__ == '__main__':
