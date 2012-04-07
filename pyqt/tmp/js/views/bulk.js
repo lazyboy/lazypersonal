@@ -5,7 +5,10 @@ lazy.core.has('lazy.View')
  * Bulk add/edit view.
  */
 lazy.views.Bulk = function(id) {
+  // parent ctor call.
+  lazy.View.call(this, id);
 };
+
 // @extends lazy.View
 lazy.views.Bulk.extends(lazy.View);
 
