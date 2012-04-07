@@ -4,7 +4,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtWebKit import *
 from PyQt4 import QtCore
-from pak import dir_scan
+from pak.util import dir_scan
 from pak import config
 from pak import structs
 
@@ -96,7 +96,6 @@ class JsBridge(QtCore.QObject):
     jsonStr += ']';
     self._logger.debug('json: ' + jsonStr)
     self._sender.send(t, jsonStr)
-    print('todo down')
 
 def run():
   app = QApplication(sys.argv)

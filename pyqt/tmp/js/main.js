@@ -35,15 +35,29 @@ lazy.demo = function() {
 
   // Test upstream message passing.
   var s = 'From downstream js';
-  var slot = window['_abacus'] || _abacus;
+  var slot = window['_abacus'];
   if (!slot) {
     alert('No connection to upstream');
   } else {
     var retValue = slot.receive(s);
     lazy.demoRender('[js]: sent to py, returned: ' + retValue);
   }
-
+  lazy.viewTest();
 };
+
+lazy.viewTest = function() {
+  /** View test. */
+  lazy.core.has('lazy.views.Bulk');
+  var bulk = new lazy.views.Bulk('builk testing');
+  bulk.render('<div style="font-size: 100px;">wow, dynamic script</div>');
+  bulk.show(true);
+
+  lazy.core.has('lazy.View');
+  var view = new lazy.View('testing-foo');
+  view.render('<div style="font-size: 100px;">wow, dynamic script</div>');
+  view.show(true);
+};
+
 
 lazy.demoRender = function(str) {
   lazy.util.$(lazy.RENDER_DIV_ID).innerHTML += '<div>' + str + '</div>';
@@ -76,6 +90,7 @@ lazy.onSubmit = function() {
   window.console.log('input.value = ' + value);
 
   lazy.sendUpstream(1, {'value': value});
+
 };
 
 window['__lazy_py_void_connection'] = lazy.py_void_connection;
