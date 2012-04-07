@@ -22,25 +22,16 @@ lazy.util.renderJ = function(el, tplScriptName, data, opt_dontClear) {
       window.console.log('E: cannot find template script for: ' + tplScriptName);
       return;
     }
-    // Convert to jQuery element.
-    tplScriptEl = jQuery(tplScriptEl);
-    if (!tplScriptEl.tmpl || !tplScriptEl.template) {
-      window.console.log(
-          'E: tplScriptName is probably not a template func container');
-      return;
-    }
-    namedTpl = 'callme' + tplScriptName.replace(/\./g, '');
-    // Cached it as named template.
-    /*
-    tplScriptEl.template(namedTpl);
+    namedTpl = 'lazytemplates.' + tplScriptName;
+    // Save the name in map.
     lazy.util.tplNameCache_[tplScriptName] = namedTpl;
     window.console.log('Cached template of script: ' + tplScriptName +
         ' as named template: ' + namedTpl);
-        */
-
-
-    var te = tplScriptEl.tmpl(data);
-    el.appendChild(te);
+    // Create the template and store in jQuery cache.
+    jQuery.template(namedTpl, tplScriptEl);
+    window.console.log('I: compiled');
+  } else {
+    window.console.log('I: already compiled template, reuse');
   }
 
   if (!el) {
@@ -48,18 +39,11 @@ lazy.util.renderJ = function(el, tplScriptName, data, opt_dontClear) {
     return;
   }
 
-
-
-  $.tmpl(''+namedTpl, data).appendto(jQuery(el));
-
-/*
   // Render it to an element.
   var renderedElement = $.tmpl(namedTpl, data);
   if (!opt_dontClear) {
     el.innerHTML = '';
   }
-  window.console.log('render: ' + renderedElement);
-  el.appendChild(renderedElement);
-*/
+  el.innerHTML += renderedElement.html();
 };
 
