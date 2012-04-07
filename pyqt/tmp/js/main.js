@@ -4,6 +4,8 @@ lazy.RENDER_DIV_ID = 'render-div-id';
 
 lazy.UPSTREAM_LISTENER_FUNC = '__lazy_py_listener';
 
+lazy.app = new lazy.App();
+
 lazy.render = function() {
   var div = document.createElement('div');
   div.id = lazy.RENDER_DIV_ID;
@@ -16,6 +18,7 @@ lazy.onUpstreamEvent = function(t, jsonStr) {
   if (t == 1) {
     window.console.log('jsonStr is: ' + jsonStr);
     lazy.demoRenderList(jsonStr);
+    lazy.app.onUpstreamEvent.apply(lazy.app, arguments);
   }
 };
 
@@ -42,13 +45,17 @@ lazy.demo = function() {
     var retValue = slot.receive(s);
     lazy.demoRender('[js]: sent to py, returned: ' + retValue);
   }
-  lazy.viewTest();
+  //lazy.viewTest();
+
+  // start app.
+  lazy.app.init();
+  lazy.app.start();
 };
 
 lazy.viewTest = function() {
   /** View test. */
   lazy.core.has('lazy.views.Bulk');
-  var bulk = new lazy.views.Bulk('builk testing');
+  var bulk = new lazy.views.Bulk('bulk testing');
   bulk.render('<div style="font-size: 100px;">wow, dynamic script</div>');
   bulk.show(true);
 

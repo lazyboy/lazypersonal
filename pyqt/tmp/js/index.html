@@ -3,6 +3,19 @@
 <title>hello world</title>
 <link href="styles.css" rel="stylesheet" type="text/css">
 
+<!-- templates -->
+<script id="templatesBulkRows" type="text/x-jquery-tmpl">
+  <div class="row-container">
+    {{each rows}}
+      <div class="row-item">${$index}: ${name}</div>
+    {{/each}}
+  </div>
+</script>
+
+<script type="text/javascript" src="jquery/jquery-1.7.2.min.js"></script>
+<script type="text/javascript" src="jquery/jquery.tmpl.min.js"></script>
+
+
 </head>
 <body>
 <div style="font-size: 40px; color: red">Body here</div>
@@ -18,7 +31,9 @@
 <script type="text/javascript" src="log.js"></script>
 <script type="text/javascript" src="views/view.js"></script>
 <script type="text/javascript" src="views/bulk.js"></script>
+<script type="text/javascript" src="app.js"></script>
 <script type="text/javascript" src="main.js"></script>
+
 
 </body>
 </html>
