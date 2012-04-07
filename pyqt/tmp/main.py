@@ -45,6 +45,7 @@ class TWebPage(QWebPage):
     self._logger = logging.getLogger('TWebPage')
     return
 
+  # Override
   def javaScriptConsoleMessage(self, message, lineNumber, sourceId):
     #qDebug(message)
     self._logger.debug('[console]: %s, line %d, sourceId %s' % (message, lineNumber, sourceId))

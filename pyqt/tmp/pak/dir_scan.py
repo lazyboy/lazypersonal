@@ -40,7 +40,7 @@ class DirScan:
         idx = idx + 1
 
         # DEBUG only
-        if idx > 10:
+        if idx > 40:
           cb(self.retList)
           return self.retList
 
