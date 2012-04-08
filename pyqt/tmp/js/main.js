@@ -43,7 +43,7 @@ lazy.onUpstreamEvent = function(t, jsonStr) {
   window.console.log('*******onUpstreamEvent')
   //var obj = eval(jsonStr);
   if (t == 1) {
-    window.console.log('jsonStr is: ' + jsonStr);
+    //window.console.log('jsonStr is: ' + jsonStr);
     lazy.app.onUpstreamEvent.apply(lazy.app, arguments);
   }
 };
@@ -55,7 +55,7 @@ lazy.sendUpstream = function(t, jsonObj) {
     window.console.log('Cannot send upstream, no slot');
     return;
   }
-  var ret = slot.fromDownstream(t, jsonObj);
+  var ret = slot.fromJs(t, jsonObj);
   window.console.log('sent upstream, value = ' + ret);
 };
 
