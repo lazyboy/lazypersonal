@@ -48,7 +48,6 @@ lazy.demo = function() {
   //lazy.viewTest();
 
   // start app.
-  lazy.app.init();
   lazy.app.start();
 };
 
