@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import sys, logging
+import sys, logging, json
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4.QtWebKit import *
@@ -17,12 +17,8 @@ class TWebView(QWebView):
         SIGNAL('javaScriptWindowObjectCleared()'), self.getJsBridge)
 
   def getJsBridge(self):
-    self.page().mainFrame().addToJavaScriptWindowObject('_abacus', self.jsBridge)
+    self.page().mainFrame().addToJavaScriptWindowObject('__lazy_py_upwards', self.jsBridge)
 
-  def testDownStream(self):
-    self.page().mainFrame().evaluateJavaScript(
-        '__lazy_py_void_connection("Hello from python2")')
-    return
 
 class DownstreamConnection:
   def __init__(self, webview):
@@ -30,14 +26,10 @@ class DownstreamConnection:
     self._logger = logging.getLogger('DownstreamConnection')
 
   def send(self, t, jsonStr):
-    mystr = '__lazy_py_listener(%d, "%s")' % (t, jsonStr)
-    self._logger.debug('\n\nsend: %s' % mystr)
-    #self._webview.page().mainFrame().evaluateJavaScript(
-    #    '__lazy_py_listener(%d, "%s")' % (t, jsonStr))
+    quoted = jsonStr.replace('\\', '\\\\').replace('\'', '\\\'')
     self._webview.page().mainFrame().evaluateJavaScript(
-        #'__lazy_py_listener(1, "2222")')
-        #'__lazy_py_void_connection("3333")')
-        '__lazy_py_listener(1, \'%s\')' % jsonStr)
+        '__lazy_py_downwards(%d, \'%s\')' % (t, quoted))
+
 
 class TWebPage(QWebPage):
   def __init__(self, parent = None):
@@ -57,13 +49,6 @@ class JsBridge(QtCore.QObject):
     self._webview = webview
     self._logger = logging.getLogger('JsBridge')
     self._sender = DownstreamConnection(self._webview)
-
-  # QString receive(QString) {}
-  @QtCore.pyqtSlot(str, result=str)
-  def receive(self, msg):
-    self._logger.debug('[py] %s' % msg)
-    self._webview.testDownStream()
-    return 'msg-returned-from-upstream'
 
   # QString fromDownstream(int, {})
   @QtCore.pyqtSlot(int, QVariant, result=str)
@@ -92,7 +77,9 @@ class JsBridge(QtCore.QObject):
   def toDownstream(self, t, objAr):
     jsonStr = '[';
     for obj in objAr:
-      jsonStr += structs.FileInfoEncoder().encode(obj) + ','
+      # TODO: Clean up this.
+      jsonStr += json.dumps(obj, cls=structs.FileInfoEncoder) + ','
+      #jsonStr += structs.FileInfoEncoder().encode(obj).replace('\'', '\\\'').replace('\\', '\\\\') + ','
     jsonStr += ']';
     self._logger.debug('json: ' + jsonStr)
     self._sender.send(t, jsonStr)
@@ -115,18 +102,10 @@ def run():
 
   web.show()
 
-  # DirScan test
+  # DirScan init.
   ds = dir_scan.DirScan()
   # ugly as hell.
   web.jsBridge.registerScanner(ds)
-
-  r = ds.scan('', cb)
-  print('printing file stats')
-  if r != None:
-    for el in r:
-      print('%dbytes, %s' % (el.size, el.getFullName()))
-  else:
-    print('None returned')
 
   sys.exit(app.exec_())
 
