@@ -1,16 +1,21 @@
 <html>
 <head>
-<title>hello world</title>
+<title>Ignored</title>
 <link href="styles.css" rel="stylesheet" type="text/css">
 
-<!-- templates -->
+<!-- BEG templates -->
 <script id="templates.bulk.rows" type="text/x-jquery-tmpl">
-  <div class="row-container">
+  <div class="bulk-list-container"><div class="bulk-rows">
     {{each rows}}
-      <div class="row-item">${$index}: ${name}</div>
+      <div class="bulk-row-item">
+        <div class="bulk-col-item left">${$index}</div>
+        <div class="bulk-col-item right">${size}</div>
+        <div class="bulk-col-item middle selectable">${name}</div>
+      </div>
     {{/each}}
-  </div>
+  </div></div>
 </script>
+<!-- EOF templates -->
 
 <script type="text/javascript" src="jquery/jquery-1.7.2.min.js"></script>
 <script type="text/javascript" src="jquery/jquery.tmpl.min.js"></script>

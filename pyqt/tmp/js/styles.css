@@ -1,3 +1,14 @@
+body {
+  padding: 0;
+  border: 0;
+  font-family: sans-serif;
+  font-size: 12px;
+  -webkit-user-select: none;
+}
+.selectable {
+  -webkit-user-select: text;
+}
+
 .big {
   font-size: 40px;
   color: blue;
@@ -6,3 +17,41 @@
   color: red;
   font-size: 8px;
 }
+
+/** BEG BULK VIEW */
+/** BEG BULK.list */
+.bulk-list-container {
+}
+.bulk-rows {
+  border: 1px solid green;
+  min-width: 400px;
+  background-color: #eee;
+}
+.bulk-row-item {
+  border-top: 1px solid gray;
+  position: relative;
+  overflow: hidden;
+  padding: 4px;
+}
+.bulk-row-item:first-child {
+  border-top: 0 !important;
+}
+.bulk-col-item {
+}
+.bulk-col-item.left {
+  position: absolute;
+  width: 60px;
+  top: 4px;
+  left: 4px;
+}
+.bulk-col-item.right {
+  width: 120px;
+  float: right;
+}
+.bulk-col-item.middle {
+  margin-left: 60px;
+}
+/** EOF BULK.list */
+
+/** EOF BULK VIEW */
+

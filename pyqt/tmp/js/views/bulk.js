@@ -20,16 +20,13 @@ lazy.views.Bulk.prototype.start = function() {
   // get data.
   window.console.log('Bulk.start');
   //debug
-  this.onData([{'name':'one'},{'name':'foobar'}]);
-//  lazy.sendUpstream(1, {'value': ''});
+  //this.onData([{'name':'one'},{'name':'foobar'}]);
+  lazy.sendUpstream(1, {'value': ''});
 };
 
 lazy.views.Bulk.prototype.onData = function(files) {
   window.console.log('view.onData');
   lazy.util.renderJ(this.el_, 'templates.bulk.rows',
       {'rows': files});
-  // debug only: Render again, checking cached template functions.
-  lazy.util.renderJ(this.el_, 'templates.bulk.rows',
-      {'rows': files}, true);
 };
 
