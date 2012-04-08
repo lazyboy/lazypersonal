@@ -23,6 +23,10 @@ class FileInfo(json.JSONEncoder):
 class FileInfoEncoder(json.JSONEncoder):
   def default(self, obj):
     if isinstance(obj, FileInfo):
-      return {'size': obj.size, 'path': obj.getFullName(), 'name': obj.name}
+      return {
+        'size': obj.size,
+        'path': obj.getFullName(),
+        'name': obj.name
+        }
     return json.JSONEncoder.default(self, obj)
 

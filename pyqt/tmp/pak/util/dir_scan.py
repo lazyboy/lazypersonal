@@ -14,7 +14,7 @@ class DirScan:
       if '' == query:
         #query = '/home/lazyboy/Downloads'
         #query = '/cygdrive/c/downloads'
-        query = 'c:/downloads'
+        query = 'c:\\downloads'
 
     if not os.path.exists(query):
       self._logger.debug('Path %s does not exist' % query)
@@ -40,7 +40,8 @@ class DirScan:
         idx = idx + 1
 
         # DEBUG only
-        if idx > 40:
+        if len(self.retList) > 500:
+          self._logger.debug('Just added: %04d: %d bytes %s' % (idx, size, fullPath))
           cb(self.retList)
           return self.retList
 
@@ -50,5 +51,5 @@ class DirScan:
   @staticmethod
   def filter(fileinfo):
     # TODO(I.A): Proper filtering.
-    return fileinfo.size > 10 * 1000
+    return fileinfo.size > 1000 * 1000
 

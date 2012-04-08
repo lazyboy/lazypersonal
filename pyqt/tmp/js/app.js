@@ -32,7 +32,16 @@ lazy.App.prototype.onUpstreamEvent = function(t, jsonStr) {
       window.console.log('app cannot find view');
       return;
     }
-    view.onData(eval(jsonStr));
+    /*
+    var d = document.createElement('div');
+    d.innerText = jsonStr;
+    d.style['color'] = 'green';
+    document.body.appendChild(d);
+    */
+    window.console.log('Before eval');
+    var obj = eval(jsonStr);
+    window.console.log('After eval');
+    view.onData(obj);
   }
 };
 
