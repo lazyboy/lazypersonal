@@ -1,0 +1,58 @@
+<html>
+<head>
+<title>hello world</title>
+<style type="text/css">
+body {
+  padding: 0;
+  border: 0;
+  font-family: sans-serif;
+  font-size: 12px;
+  -webkit-user-select: text;
+}
+.container {
+  background-color: #eee;
+}
+.res-helper {
+  border: 1px solid #ccc;
+  padding-left: 4px;
+  overflow: hidden;
+}
+.css-ac-row-gen {
+  width: 120px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.css-ac-row-gen:hover {
+  background-color: green;
+}
+.ac-row-selected {
+  background-color: #bbb;
+}
+</style>
+<script type="text/javascript" src="ac.js"></script>
+</head>
+<body>
+<div class="container">
+  <div style="position: relative">
+    <input
+        id="ac-input"
+        type="search"
+        onfocus="_tunnel(event, this, 1)"
+        onkeydown="_tunnel(event, this, 2)"
+        onblur="_tunnel(event, this, 3)"
+        placeholder="droid"/>
+    <div style="position: absolute; display: none;" class="res-helper" id="ac-results"></div>
+    <input type="button" value="Add" onclick="_add()"/>
+  </div>
+</div>
+
+<div style="display: none" id="ac-row-gen" onclick="_acselect(event, this)" class="css-ac-row-gen">
+  <div class="ac-res-str"></div>
+  <div class="ac-res-id" style="display: none"></div>
+</div>
+
+<script>lazy.ac.init();</script>
+
+</body>
+</html>
