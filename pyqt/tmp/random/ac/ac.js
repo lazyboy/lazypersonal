@@ -128,7 +128,20 @@ lazy.ac.prototype.onTunnel = function(e, t) {
       this.sendAdd_();
       return false;
     }
-
+  } else if (t == 3 || t == 6) {
+    if (t == 6) { // onsearch, used for x click detection only.
+      // only used for clearing search
+      var value = this.el_.value;
+      if (value && value != '') {
+        // this is triggered for some evt other than clicking x, bail out.
+        return;
+      }
+    }
+    var keyCode = e.keyCode;
+    if (keyCode == 9 || keyCode == 38 || keyCode == 40 || keyCode == 13) {
+      lazy.ww('skip keyup');
+      return false;
+    }
     var value = this.el_.value;
     // TODO: this would call req interface.
     var self = this;
@@ -139,7 +152,7 @@ lazy.ac.prototype.onTunnel = function(e, t) {
       }
       self.onResult_(resAr);
     }, 0);
-  } else if (t == 3) { // blur
+  } else if (t == 4) { // blur
     lazy.ww('blur');
     this.resEl_.style.display = 'none';
   } else {

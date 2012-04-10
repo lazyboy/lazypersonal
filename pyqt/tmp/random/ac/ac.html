@@ -40,7 +40,9 @@ body {
         type="search"
         onfocus="_tunnel(event, this, 1)"
         onkeydown="_tunnel(event, this, 2)"
-        onblur="_tunnel(event, this, 3)"
+        onkeyup="_tunnel(event, this, 3)"
+        onblur="_tunnel(event, this, 4)"
+        onsearch="_tunnel(event, this, 6)"
         placeholder="droid"/>
     <div style="position: absolute; display: none;" class="res-helper" id="ac-results"></div>
     <input type="button" value="Add" onclick="_add()"/>
