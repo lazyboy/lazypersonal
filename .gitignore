@@ -1,2 +1,6 @@
-#Ignore compiled files (*.pyc)
+# Ignore compiled files (*.pyc)
 *.pyc
+# Ignore py shelve files.
+*.bak
+*.bak
+*.dir
