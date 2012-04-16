@@ -3,12 +3,13 @@ import logging, os, shelve
 
 class MyShelve():
   _instance = None
+  _data_dir = 'store/'
   def __init__(self):
     self._logger = logging.getLogger('MyShelve')
     return
 
   def getNxtId(self, shelveName):
-    s = shelve.open('tmp-shelve-' + shelveName)
+    s = shelve.open(MyShelve._data_dir + shelveName)
     try:
       # TODO: Inefficient.
       maxm = 0
@@ -26,7 +27,7 @@ class MyShelve():
       s.close()
 
   def getAllAsArray(self, shelveName):
-    s = shelve.open('tmp-shelve-' + shelveName)
+    s = shelve.open(MyShelve._data_dir + shelveName)
     try:
       ret = []
       for key in s.keys():
@@ -36,7 +37,7 @@ class MyShelve():
       s.close()
 
   def getObj(self, shelveName, id):
-    s = shelve.open('tmp-shelve-' + shelveName)
+    s = shelve.open(MyShelve._data_dir + shelveName)
     try:
       strKey = str(id)
       # TODO: Why has_key doesn't work?
@@ -51,14 +52,14 @@ class MyShelve():
       s.close()
 
   def setObj(self, shelveName, id, value):
-    s = shelve.open('tmp-shelve-' + shelveName)
+    s = shelve.open(MyShelve._data_dir + shelveName)
     try:
       s[str(id)] = value
     finally:
       s.close()
 
   def deleteAll(self, shelveName):
-    s = shelve.open('tmp-shelve-' + shelveName)
+    s = shelve.open(MyShelve._data_dir + shelveName)
     try:
       for key in s.keys():
         del s[key]
