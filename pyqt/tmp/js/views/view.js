@@ -21,3 +21,5 @@ lazy.View.prototype.show = function(value) {
   this.el_.style.display = value ? '' : 'none';
 };
 
+/** Handles ui event. */
+lazy.View.prototype.handleEvent = function(e, t, p) {};

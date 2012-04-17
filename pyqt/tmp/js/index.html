@@ -7,10 +7,15 @@
 <script id="templates.bulk.rows" type="text/x-jquery-tmpl">
   <div class="bulk-list-container"><div class="bulk-rows">
     {{each rows}}
-      <div class="bulk-row-item">
+      <div class="bulk-row-item"
+          onclick="_evt_(event, ${et}, {ep: ${ep} });">
+          <!-- ${et}, ${ep} -->
         <div class="bulk-col-item left">${$index}</div>
         <div class="bulk-col-item right">${size}</div>
-        <div class="bulk-col-item middle selectable">${name}</div>
+        <div class="bulk-col-item middle selectable">
+          <div>${name}</div>
+          <div>${formattedMtime}</div>
+        </div>
       </div>
     {{/each}}
   </div></div>
@@ -34,6 +39,7 @@
 <script type="text/javascript" src="views/view.js"></script>
 <script type="text/javascript" src="views/bulk.js"></script>
 <script type="text/javascript" src="app.js"></script>
+<script type="text/javascript" src="events.js"></script>
 <script type="text/javascript" src="main.js"></script>
 
 </body>

@@ -51,3 +51,7 @@ def run():
 
 if __name__ == '__main__':
   run()
+
+  #ds = dir_scan.DirScan()
+  #ds.scan('', None)
+  ##dir_scan.Tag1Suggest.getTags('FooBar - town')

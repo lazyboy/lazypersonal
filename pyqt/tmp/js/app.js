@@ -45,3 +45,14 @@ lazy.App.prototype.onUpstreamEvent = function(t, jsonStr) {
   }
 };
 
+lazy.App.prototype.handle = function(e, t, p) {
+  if (t == 1) {
+    var view = this.views_['bulk'];
+    if (!view) {
+      window.console.log('bulk view not found to handle event');
+      return;
+    }
+    view.handleEvent(e, t, p);
+  }
+};
+

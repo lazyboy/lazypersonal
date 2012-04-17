@@ -47,3 +47,18 @@ lazy.util.renderJ = function(el, tplScriptName, data, opt_dontClear) {
   el.innerHTML += renderedElement.html();
 };
 
+lazy.util.two_ = function(ii) {
+  var ret = '' + ii
+  if (ii < 10) ret = '0' + ret;
+  return ret;
+};
+
+lazy.util.toDateStr = function(t) {
+  var d = new Date(t);
+  return d.getFullYear() + '/' +
+      lazy.util.two_(d.getMonth()) + '/' +
+      lazy.util.two_(d.getDate()) + ' - ' +
+      lazy.util.two_(d.getHours()) + ':' +
+      lazy.util.two_(d.getMinutes());
+};
+
