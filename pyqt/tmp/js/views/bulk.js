@@ -29,10 +29,8 @@ lazy.views.Bulk.prototype.onData = function(files) {
   for (var i = 0; i < files.length; ++i) {
     files[i]['et'] = 1;
     files[i]['ep'] = i;
-    window.console.log('mtime: ' + files[i]['mtime']);
     var mtimeStr = lazy.util.toDateStr(
         1000 * files[i]['mtime']);
-    window.console.log('formatted: ' + mtimeStr);
     files[i]['formattedMtime'] = mtimeStr;
   }
   lazy.util.renderJ(this.el_, 'templates.bulk.rows',
