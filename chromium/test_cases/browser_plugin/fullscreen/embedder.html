@@ -1,0 +1,38 @@
+<!-- Embedder for testing fullscreen infobar in guest. -->
+<!-- UPDATE $HOST_PATH with the host path -->
+<!--
+    src="http://www.w3schools.com/html5/tryit.asp?filename=tryhtml5_geolocation"
+-->
+<body>
+  <div>
+    <div>Browser Plugin fullscreen mode (for tab) switchign.</div>
+    <div>Click on the button inside guest to trigger fullscreen from guest {which will crash guest and send
+      a message to js here (embedder)}.</div>
+  </div>
+  <div>This is yo browser plugin {black border}</div>
+  <div style="border: 2px solid black;">
+    <object id="plugin"
+      src="$HOST_PATH/fullscreen.html"
+      type="application/new-browser-plugin"
+      width="640"
+      height="480">
+    </object>
+  </div>
+  <div>
+  <a href="http://www.slashdot.org">Click to go to different page page</a>
+  </div>
+<script type="text/javascript">
+  var FULLSCREEN_ACCESS_EVENT_NAME = 'fullscreen';
+  var bp = document.getElementById('plugin');
+  if (!bp) { alert('browser plugin element not found'); return; }
+  window.console.log('attaching fullscreen event listeners');
+  bp.addEventListener(FULLSCREEN_ACCESS_EVENT_NAME, function() {
+    window.console.log('All [fullscreen] args: ' +
+        Array.prototype.join.call(arguments, ' -- '));
+    window.console.log("Fullscreen mode requested from guest!");
+  });
+  bp.addEventListener('navigation', function(src) {
+    window.console.log('*** JS NAVIGATION EVENT: ' + src);
+  });
+</script>
+</body>
