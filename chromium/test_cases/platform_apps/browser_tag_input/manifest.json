@@ -1,0 +1,16 @@
+{
+  "name": "Platform(new): btag input focus issue check",
+  "version": "1",
+  "manifest_version": 2,
+  "minimum_chrome_version": "23",
+  "permissions": [
+    "experimental",
+    "app.window",
+    "browserTag"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}
