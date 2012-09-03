@@ -1,0 +1,11 @@
+* Config files for building with ninja on Windo$
+
+1. Microsoft.Cpp.Win32.user.props
+%LOCALAPPDATA%\Microsoft\MSBuild\v4.0\
+
+2. Microsoft.Cpp.x64.user.props:
+This one is probably not required, goes to the same place if required.
+
+3. ~/.gyp/include.gypi
+Otherwise you get errors saying atlthunk.lib not found (WDK).
+

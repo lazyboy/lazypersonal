@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <IncludePath>$(DXSDK_DIR)\include;$(IncludePath);$(WDK_DIR)\inc\atl71;$(WDK_DIR)\inc\mfc42</IncludePath>
+    <LibraryPath>$(DXSDK_DIR)\lib\x64;$(LibraryPath);$(WDK_DIR)\lib\ATL\amd64</LibraryPath>
+  </PropertyGroup>
+</Project>
