@@ -1,0 +1,35 @@
+<!-- A page which triggers webRTC -->
+<html>
+  <head>
+    <title>WebRTC test</title>
+  </head>
+  <body>
+    <div>
+      <span>Video element follows:</span>
+      <span><input type="button" value="Click to request webRTC" onclick="__play_me__()"/></span>
+    </div>
+    <video id="vid" width="100%" height="100%" autoplay="autoplay"/>
+  </body>
+  <script>
+  var onUserMediaSuccess = function(stream) {
+    window.console.log('Media permission granted');
+    var url = webkitURL.createObjectURL(stream);
+    var videoElement = document.getElementById('vid');
+    if (!videoElement) { window.console.log('No element to render'); return; }
+    videoElement.src = url;
+    window.console.log('Success');
+  };
+  var onUserMediaFailure = function(error) {
+    window.console.log('Failure, error code: ' + error.code);
+  };
+  var accessMedia = function() {
+    try {
+      navigator.webkitGetUserMedia(
+          {audio: true, video: true}, onUserMediaSuccess, onUserMediaFailure);
+    } catch (e) {
+      window.console.log('Exception: ' + e);
+    }
+  };
+  window['__play_me__'] = accessMedia;
+  </script>
+</html>
