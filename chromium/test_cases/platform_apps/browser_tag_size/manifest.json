@@ -1,0 +1,18 @@
+{
+  "name": "BP: Content size test",
+  "version": "1",
+  "manifest_version": 2,
+  "minimum_chrome_version": "23",
+  "permissions": [
+    "experimental",
+    "app.window",
+    "browserTag",
+    "audioCapture",
+    "videoCapture"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}
