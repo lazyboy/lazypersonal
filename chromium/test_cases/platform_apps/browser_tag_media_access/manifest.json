@@ -1,0 +1,16 @@
+{
+  "name": "BP: MediaAccess app",
+  "version": "1",
+  "manifest_version": 2,
+  "minimum_chrome_version": "23",
+  "permissions": [
+    "experimental",
+    "app.window",
+    "browserTag"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}
