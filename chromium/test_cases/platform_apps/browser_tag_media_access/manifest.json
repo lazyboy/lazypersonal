@@ -6,7 +6,9 @@
   "permissions": [
     "experimental",
     "app.window",
-    "browserTag"
+    "browserTag",
+    "audioCapture",
+    "videoCapture"
   ],
   "app": {
     "background": {

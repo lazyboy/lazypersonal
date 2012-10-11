@@ -6,8 +6,6 @@
  */
 chrome.app.runtime.onLaunched.addListener(function() {
   chrome.app.window.create('main.html', {}, function () {});
-  window.setTimeout(function() {
-    // Check if this works.
-    window.console.log('Log from test.js');
-  }, 3000);
+  window.console.log('Log from test.js');
 });
+
