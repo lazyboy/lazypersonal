@@ -1,0 +1,13 @@
+Config { font = "xft:DejaVu Sans Mono:pixelsize=12"
+       , bgColor = "black"
+       , fgColor = "grey"
+       , position = TopW L 100 
+       , commands = [ Run Date "%a %b %_d %l:%M" "date" 10
+                    , Run MultiCpu ["-L","3","-H","50","--normal","green","--high","red","-p","3","-t","Cpu: <total0>% <total1>%"] 10
+                    , Run StdinReader
+                    ]
+       , sepChar = "%"
+       , alignSep = "}{"
+       , template = "%StdinReader% }{ %multicpu% <fc=#ee9a00>%date%</fc> "
+       }
+

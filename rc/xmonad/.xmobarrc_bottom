@@ -1,0 +1,15 @@
+Config { font = "xft:DejaVu Sans Mono:pixelsize=12"
+       , bgColor = "black"
+       , fgColor = "grey"
+       , position = BottomW L 100
+       , commands = [ Run Weather "KAUS" ["-t","<tempF>° <rh>%","-L","64","-H","77","--normal","green","--high","red","--low","blue"] 36000
+                    , Run Memory ["-t","Mem: <usedratio>%"] 10
+                    , Run Swap [] 10
+                    , Run Network "wlan0" ["-L","0","-H","32","--normal","#56c2d6","--high","#56c2d6"] 10
+                    , Run DiskU [("/", "/: <usedp>"), ("/boot", "/boot: <usedp>"), ("/home", "/home: <usedp>"), ("/var", "/var: <usedp>")] []  60
+                    , Run DiskIO [("/", "/: <total>"), ("/boot", "/boot: <total>"), ("/home", "/home: <total>"), ("/var", "/var: <total>")] [] 10
+                    ]
+       , sepChar = "%"
+       , alignSep = "}{"
+       , template = " %KAUS% | %wlan0% } %disku% | %diskio% { %memory% * %swap% "
+       }

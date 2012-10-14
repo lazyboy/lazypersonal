@@ -1,16 +1,33 @@
+# Author: lazyboy
 [user]
-	name = lazyboy
-	email = lazyboybd@gmail.com
-
-[core]
-	editor = vim
+  name = __FIX_ME__
+  email = __FIX_ME__
 
 [alias]
   co = checkout
+  d = difftool # This opens vimdiff in RO, fix!
+  dn = diff --name-only
 
 [color]
-  branch = auto
-  diff = auto
-  interactive = auto
-  status = auto
+  ui = auto
+  branch = true
 
+[color.branch]
+  current = green reverse
+  local = green
+  remote = yellow
+
+[core]
+  autocrlf = false
+  filemode = false
+  editor = vim
+
+[diff]
+  tool = vimdiff
+  #external = /home/lazyboy/bin/git-meld
+
+[difftool]
+  prompt = false
+
+[chromium]
+  sync-branch = gclient

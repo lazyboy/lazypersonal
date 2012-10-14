@@ -1,0 +1,18 @@
+This config files are almost completely copied from xmoand site's sample configs.
+This uses two xmobar-s.
+The configs for xmobar are also provided here.
+
+FILES:
+  xmonad.hs
+  .xmobarrc
+  .xmobarrc2
+
+TODO: Clean it up and remove unwanted config in xmonad.hs
+
+NOTE:
+  The meta key has been changed to mod4 since I'm using a mac style keyboard and want mod to be the 'Command' key.
+
+USAGE:
+Copy xmonad.hs to ~/.xmonad/ {create directory if doesn't exist}
+# xmonad --recompile
+# nohup xmonad &

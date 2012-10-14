@@ -1,0 +1,25 @@
+! Author: lazyboy
+! Control.
+clear control
+! Alt?
+clear mod1
+! Super?
+clear mod4
+
+! Map 'Command' key to alt.
+keycode 133 = Alt_L NoSymbol Alt_L
+keycode 134 = Alt_R NoSymbol Alt_R
+
+! Map 'Option' key to ctrl.
+keycode 64 = Control_L NoSymbol Control_L
+keycode 108 = Control_R NoSymbol Control_R
+
+!Map 'Ctrl' key to super.
+keycode 37 = Super_L NoSymbol Super_L
+
+add control = Control_L
+add control = Control_R
+add mod4 = Alt_L
+add mod4 = Alt_R
+add mod1 = Super_L
+add mod1 = Super_R
