@@ -1,0 +1,137 @@
+! this are Xresources to make xterm look good
+! put into ~/.Xresources
+! after changing contents, run xrdb -merge .Xresources
+! gentoo has a bug so that it doesnt read it when X starts, so add above
+! command to /etc/xfce4/xinitrc (top) and be happy.
+
+!xterm*background:	Black
+!xterm*foreground:	Grey
+xterm*font:		-misc-dejavu sans mono-medium-r-normal-*-*-120-*-*-m-*-iso8859-1
+xterm*boldFont:		-misc-dejavu sans mono-medium-r-normal-*-*-120-*-*-m-*-iso8859-1
+!xterm*font:		-misc-dejavu sans mono-medium-r-normal-*-*-120-*-*-m-*-iso8859-1
+!xterm*iconPixmap: ...
+!XTerm*iconName: terminal
+!Mwm*xterm*iconImage: /home/a/a1111aa/xterm.icon
+XTerm*boldMode: false
+XTerm*loginShell: true
+XTerm*foreground: gray90
+XTerm*background: black
+XTerm*cursorColor: rgb:00/80/00
+XTerm*borderColor: white
+XTerm*scrollColor: black
+!XTerm*visualBell: true
+XTerm*saveLines: 1000
+!! XTerm.VT100.allowSendEvents: True
+XTerm*allowSendEvents: True
+XTerm*sessionMgt: false
+!XTerm*eightBitInput:  false
+!XTerm*metaSendsEscape: true
+!XTerm*internalBorder:  10
+!XTerm*highlightSelection:  true
+!XTerm*VT100*colorBDMode:  on
+!XTerm*VT100*colorBD:  blue
+!XTerm.VT100.eightBitOutput:  true
+!XTerm.VT100.titeInhibit:  false
+XTerm*color0: black
+XTerm*color1: red3
+XTerm*color2: green3
+!XTerm*color2: DarkGreen
+XTerm*color3: yellow3
+XTerm*color4: DodgerBlue1
+XTerm*color5: magenta3
+XTerm*color6: cyan3
+!XTerm*color6: red
+XTerm*color7: gray90
+XTerm*color8: gray50
+XTerm*color9: red
+!tis the green
+XTerm*color10: DarkOliveGreen3
+XTerm*color11: yellow
+XTerm*color12: blue
+XTerm*color13: magenta
+XTerm*color14: cyan
+XTerm*color15: white
+XTerm*colorUL: yellow
+XTerm*colorBD: white
+!XTerm*mainMenu*backgroundPixmap:     gradient:vertical?dimension=400&start=gray10&end=gray40
+!XTerm*mainMenu*foreground:          white 
+!XTerm*vtMenu*backgroundPixmap:       gradient:vertical?dimension=550&start=gray10&end=gray40
+!XTerm*vtMenu*foreground:             white
+!XTerm*fontMenu*backgroundPixmap:     gradient:vertical?dimension=300&start=gray10&end=gray40
+!XTerm*fontMenu*foreground:           white
+!XTerm*tekMenu*backgroundPixmap:      gradient:vertical?dimension=300&start=gray10&end=gray40
+!XTerm*tekMenu*foreground:            white
+!XTerm Profiles (idea from dag wieers)
+XTerm*rightScrollBar: true
+
+
+
+!!!URxvt.termName: rxvt-256color
+!!!URxvt*transparent: false
+!!!URxvt*tintColor: Blue
+!!!!#URxvt*shading: 40
+!!!URxvt*saveLines: 12000
+!!!URxvt*foreground: Black
+!!!URxvt*background: White
+!!!!URxvt*font: xft:Bitstream Vera Sans Mono:pixelsize=12:antialias=true:hinting=true
+!!!!URxvt*boldFont: xft:Bitstream Vera Sans Mono:bold:pixelsize=12:antialias=true:hinting=true
+!!!!##URxvt*font: xft:DejaVu Sans Mono:pixelsize=12:antialias=true:hinting=true
+!!!!##URxvt*boldFont: xft:DejaVu Sans Mono:bold:pixelsize=12:antialias=true:hinting=true
+!!!!#URxvt*font: xft:Liberation Mono:pixelsize=13:antialias=true:hinting=true
+!!!!#URxvt*boldFont: xft:Liberation Mono:bold:pixelsize=13:antialias=true:hinting=true
+!!!!#URxvt*font: xft:terminus:pixelsize=15
+!!!!#URxvt*boldFont: xft:terminus:pixelsize=15
+!!!URxvt*font:-*-courier-medium-r-normal-*-14-*-*-*-*-*-iso8859-1
+!!!URxvt*boldFont:-*-courier-bold-r-normal-*-14-*-*-*-*-*-iso8859-1
+!!!URxvt*color4: RoyalBlue
+!!!URxvt*color12: RoyalBlue
+!!!URxvt*scrollBar: true
+!!!URxvt*scrollBar_right: false
+!!!URxvt*scrollstyle: rxvt
+
+!urxvt*foreground: #f2f2f2
+urxvt*foreground: black
+!urxvt*background: #101010
+urxvt*background: white
+urxvt*color0: #101010
+urxvt*color1: #f13a21
+!urxvt*color2: #93f91d
+urxvt*color2: #66ad03
+urxvt*color3: #ffd00a
+urxvt*color4: #004f9e
+urxvt*color5: #ec0048
+urxvt*color6: #2aa7e7
+urxvt*color7: #f2f2f2
+urxvt*color8: #1d202f
+urxvt*color9: #ff361e
+!urxvt*color10: #ffc005
+urxvt*color10: #c49302
+!urxvt*color11: #93ff00
+!urxvt*color11: #4e8503
+!urxvt*color11: black
+urxvt*color11: #4e8503
+urxvt*color12: #0071ff
+urxvt*color13: #ef0051
+urxvt*color14: #4bb8fd
+urxvt*color15: #a020f0
+urxvt*transparent: false
+urxvt*shading: 40
+urxvt*fading: 40
+urxvt*fadeColor: #bbbbbb
+!!good
+!urxvt*font: xft:DejaVu\ Sans\ Mono:pixelsize=11
+!urxvt*boldFont: xft:DejaVu\ Sans\ Mono:pixelsize=11
+!!try
+!urxvt*font: -misc-dejavu sans mono-medium-r-normal-*-*-120-*-*-m-*-iso8859-1
+!urxvt*boldFont: -misc-dejavu sans mono-medium-r-normal-*-*-120-*-*-m-*-iso8859-1
+!disable font bolding
+urxvt*boldFont:
+!URxvt*font: xft:DejaVu Sans Mono:pixelsize=10
+!URxvt*boldFont: xft:DejaVu Sans Mono:pixelsize=10
+
+!! Scrollbar related
+urxvt*scrollBar: false
+URxvt*scrollTtyOutput: false
+URxvt*scrollWithBuffer: true
+URxvt*scrollTtyKeypress: true
+
