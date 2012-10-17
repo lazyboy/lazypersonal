@@ -1,0 +1,36 @@
+<!-- Embedder for testing geolocation infobar in guest. -->
+<!--
+    src="http://www.w3schools.com/html5/tryit.asp?filename=tryhtml5_geolocation"
+-->
+<head>
+  <script type="text/javascript">
+  </script>
+</head>
+
+<body>
+  <div>
+    <div>Browser Plugin test for geolocation access infobar.</div>
+    <div>Click on the button inside guest to trigger geolocation api {which will crash guest and send
+      a message to js here (embedder)}.</div>
+  </div>
+  <div style="border: 2px solid black;">
+    <object id="plugin"
+      src="FIX_ME/geolocation.html"
+      type="application/browser-plugin"
+      width="640"
+      height="480">
+    </object>
+  </div>
+<script type="text/javascript">
+  // THIS IS OUTDATED.
+  var GEOLOCATION_ACCESS_EVENT_NAME = 'geolocationreq';
+  var bp = document.getElementById('plugin');
+  if (!bp) { alert('browser plugin element not found'); return; }
+  window.console.log('attaching geolocation event listeners');
+  bp.addEventListener(GEOLOCATION_ACCESS_EVENT_NAME, function() {
+    window.console.log('All [geolocationreq] args: ' +
+        Array.prototype.join.call(arguments, ' -- '));
+    alert("geolocation access event");
+  });
+</script>
+</body>

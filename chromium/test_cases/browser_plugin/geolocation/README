@@ -1,0 +1,5 @@
+Browser plugin geolocation api test.
+embedder.html is the embedder that embeds a guest which can location via html5 api (geolocation.html).
+When requested (thru <input> button), the guest would eventually get location iff a. embedder allows (not yet implemented), b. embedder has access to geolocation.
+
+One needs to replace FIX_ME in embedder.html with correct host name.
