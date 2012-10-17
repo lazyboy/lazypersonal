@@ -62,3 +62,25 @@ set shiftwidth=2
 set softtabstop=2
 set expandtab
 
+" ------------------------------------------------------------------------------
+" Opens file using dmenu.
+" http://leafo.net/posts/using_dmenu_to_open_quickly.html
+" ------------------------------------------------------------------------------
+
+" Strip the newline from the end of a string
+function! Chomp(str)
+  return substitute(a:str, '\n$', '', '')
+endfunction
+
+" Find a file and pass it to cmd
+function! DmenuOpen(cmd)
+  let fname = Chomp(system("git ls-files | dmenu -i -l 20 -p " . a:cmd))
+  if empty(fname)
+    return
+  endif
+  execute a:cmd . " " . fname
+endfunction
+
+"map <c-t> :call DmenuOpen("vsplit")<cr> # Enabled this.
+"""map <c-f> :call DmenuOpen("e")<cr> # Don't do this!
+" ------------------------------------------------------------------------------
