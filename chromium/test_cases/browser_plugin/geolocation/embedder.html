@@ -10,8 +10,13 @@
 <body>
   <div>
     <div>Browser Plugin test for geolocation access infobar.</div>
-    <div>Click on the button inside guest to trigger geolocation api {which will crash guest and send
-      a message to js here (embedder)}.</div>
+    <div>Click on the button inside guest to trigger geolocation api. Embedder
+      will be asked to provide geolocation access (see requestPermission event
+      listener in js), it can deny, in that case guest will get a location
+      error, or it can allow, in which case user will be asked to allow location
+      permission on the embedder. If user agrees (or embedder already has access
+      to geolocation), the location will be available to the guest and guest
+      will render lat/lng.</div>
   </div>
   <div style="border: 2px solid black;">
     <object id="plugin"
@@ -22,15 +27,16 @@
     </object>
   </div>
 <script type="text/javascript">
-  // THIS IS OUTDATED.
-  var GEOLOCATION_ACCESS_EVENT_NAME = 'geolocationreq';
   var bp = document.getElementById('plugin');
   if (!bp) { alert('browser plugin element not found'); return; }
-  window.console.log('attaching geolocation event listeners');
-  bp.addEventListener(GEOLOCATION_ACCESS_EVENT_NAME, function() {
-    window.console.log('All [geolocationreq] args: ' +
-        Array.prototype.join.call(arguments, ' -- '));
-    alert("geolocation access event");
+  var PERMISSION_REQUEST_EVENT_NAME = 'permissionRequest';
+  window.console.log('attaching requestPermission event listeners');
+  bp.addEventListener(PERMISSION_REQUEST_EVENT_NAME, function(e) {
+    window.console.log('requestPermission fired, type: ' + e.type);
+    if (e.type == 'geolocation') {
+      e.allow();
+      // e.deny();
+    }
   });
 </script>
 </body>

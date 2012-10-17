@@ -15,10 +15,14 @@
   </body>
   <script>
     $ = function(id) { return document.getElementById(id); };
-    var onFailure = function(err) {
+    var onFailure = function(errObj) {
       console.log('failure');
-      console.log(err)
-      $('status-div').innerText = 'err';
+      console.log(errObj)
+      var msg = errObj;
+      if (typeof errObj == 'object') {
+        msg = 'Code: ' + errObj.code + ', Reason: ' + errObj.message;
+      }
+      $('status-div').innerText = 'Error: ' + msg;
       $('status-div').style.color = 'red';
     };
     var onGeolocationReq = function() {
