@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="browser.css">
+
+  <link rel="stylesheet" type="text/css" href="a.css">
+  <link rel="stylesheet" type="text/css" href="b.css">
+  <script type="text/javascript" src="a.js"></script>
+  <script type="text/javascript" src="log.js"></script>
+  <script type="text/javascript" src="util.js"></script>
+  <script type="text/javascript" src="contents.js"></script>
+  <script type="text/javascript" src="tab.js"></script>
+  <script type="text/javascript" src="tabstrip.js"></script>
+  <script type="text/javascript" src="browser.js"></script>
+  <script type="text/javascript" src="main.js"></script>
+
+    <script src="new-browser.js"></script>
+  <body style="height:100%">
+    <div id="root" class="root"></div>
+
+<div style="display: none">
+  <div id="browser-boilerplate">
+    <div id="controls">
+
+      <button id="back" title="Go Back">&#9664;</button>
+      <button id="forward" title="Go Forward">&#9654;</button>
+      <button id="home" title="Go Home">&#8962;</button>
+      <button id="reload" title="Reload">&#10227;</button>
+      <button id="terminate" title="Simulate Crash">&#9760;</button>
+
+      <form id="location-form">
+        <div id="center-column">
+          <input id="location" type="text" value="http://www.google.com/">
+        </div>
+        <input type="submit" value="Go">
+      </form>
+
+    </div>
+    <div id="browser-holder"></div>
+    <!--
+    <browser width="640" height="480"></browser>
+    -->
+
+    <div id="sad-browser">
+      <div id="sad-browser-icon">&#9762;</div>
+      <h2>Aw, Snap!</h2>
+
+      <p>Something went wrong while displaying this webpage.
+      To continue, reload or go to another page.</p>
+    </div>
+  </div>
+</div>
+
+  </body>
+</html>
