@@ -1,0 +1,49 @@
+<!-- Guest which triggers html5 geolocation -->
+<html>
+  <head>
+    <title>Geolocation test</title>
+  </head>
+  <body>
+    <div>
+    <input type="button" value="Click to request geolocation"
+        onclick="__on_geolocation__()"/>
+    </div>
+    <div>
+      Status: <div id="status-div"></div>
+    </div>
+
+  </body>
+  <script>
+    $ = function(id) { return document.getElementById(id); };
+    var onFailure = function(errObj) {
+      console.log('failure');
+      console.log(errObj)
+      var msg = errObj;
+      if (typeof errObj == 'object') {
+        msg = 'Code: ' + errObj.code + ', Reason: ' + errObj.message;
+      }
+      $('status-div').innerText = 'Error: ' + msg;
+      $('status-div').style.color = 'red';
+    };
+    var onGeolocationReq = function() {
+      if (!navigator.geolocation) {
+        onFailure('Not supported');
+        return;
+      }
+      $('status-div').innerText = 'Searching...';
+      $('status-div').style.color = 'blue';
+      navigator.geolocation.getCurrentPosition(
+        function(pos) {
+          console.log('success');
+          console.log(pos);
+          var latlngLat = pos.coords.latitude;
+          var latlngLng = pos.coords.longitude;
+          $('status-div').innerText =
+              'Found, yay!, lat: ' + latlngLat + ', lng: ' + latlngLng;
+          $('status-div').style.color = 'green';
+        },
+        onFailure);
+    };
+  window['__on_geolocation__'] = onGeolocationReq;
+  </script>
+</html>
