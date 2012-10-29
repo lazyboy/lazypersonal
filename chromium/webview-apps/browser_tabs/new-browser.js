@@ -24,8 +24,9 @@ glob.browserInit = function(idx, div) {
     return;
   }
   browserHolder.innerHTML =
-    '<browser id="bb-' + idx +
-    '" src="http://www.google.com" width="500" height="500"></browser>';
+    '<webview id="bb-' + idx + '"' +
+    ' src="http://www.google.com"' +
+    ' style="width:500px; height: 500px;"></webview>';
   setTimeout(function() { glob.initStep2(div, boilerplateClone, idx); }, 0);
 };
 
@@ -34,8 +35,8 @@ glob.initStep2 = function(div, boilerplateClone, idx) {
   LOG('glob.initStep2...');
   var b = boilerplateClone;
 
-  //var browser = b.querySelector('browser');
-  //var browser = document.body.querySelector('browser');
+  //var browser = b.querySelector('webview');
+  //var browser = document.body.querySelector('webview');
   var browser = document.getElementById('bb-'+idx);
   if (!browser) { ERR('<browser> element not found, die'); return; }
   /*
@@ -70,30 +71,30 @@ glob.initStep3 = function(div, boilerplateClone, idx) {
     glob.navigateTo(b, b.querySelector('#location').value);
   };
 
-  var y = browser.addEventListener('navigation', function(e) {
+  var y = browser.addEventListener('loadcommit', function(e) {
     div.classList.remove('crashed');
     if (!e.isTopLevel) return;
     b.querySelector('#location').value = e.url;
   });
-  LOG('navigation add value:', y);
+  LOG('loadcommit add value:', y);
 
   browser.addEventListener('crash', function(e) {
     div.classList.add('crashed');
   });
-  browser.addEventListener('loadStart', function(e) {
+  browser.addEventListener('loadstart', function(e) {
     div.classList.remove('crashed');
     if (!e.isTopLevel)  return;
     b.querySelector('#location').value = e.url;
   });
-  browser.addEventListener('loadAbort', function(e) {
-    console.log('oadAbort');
+  browser.addEventListener('loadabort', function(e) {
+    console.log('loadabort');
     console.log('  url: ' + e.url);
     console.log('  isTopLevel: ' + e.isTopLevel);
     console.log('  type: ' + e.type);
   });
-  browser.addEventListener('loadRedirect', function(e) {
+  browser.addEventListener('loadredirect', function(e) {
     div.classList.remove('crashed');
-    if (!e.isTopLevel) return; 
+    if (!e.isTopLevel) return;
     b.querySelector('#location').value = e.newUrl;
   });
 };
@@ -111,7 +112,7 @@ glob.doLayout = function(container, idx) {
   document.body.querySelector('#root').style.height = h + 'px';
 
   var browser = document.getElementById('bb-'+idx);
-  //var browser = container.querySelector('browser');
+  //var browser = container.querySelector('webview');
   var controls = container.querySelector('#controls');
   var controlsHeight = controls.offsetHeight;
   var windowWidth = container.offsetWidth;
@@ -123,8 +124,10 @@ glob.doLayout = function(container, idx) {
   // WHY?
   //browser.width = windowWidth;
   //browser.height = windowHeight - controlsHeight;
-  browser.setAttribute('width', windowWidth);
-  browser.setAttribute('height', windowHeight);
+  //browser.setAttribute('width', windowWidth);
+  //browser.setAttribute('height', windowHeight);
+  browser.style.width = windowWidth + 'px';
+  browser.style.height = windowHeight + 'px';
 
   var sadBrowser = container.querySelector('#sad-browser');
   sadBrowser.style.width = browser.width + 'px';
