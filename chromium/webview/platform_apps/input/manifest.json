@@ -1,12 +1,10 @@
 {
-  "name": "Platform(new): btag input focus issue check",
+  "name": "<webview> Input focus.",
   "version": "1",
   "manifest_version": 2,
   "minimum_chrome_version": "23",
   "permissions": [
-    "experimental",
-    "app.window",
-    "browserTag"
+    "webview"
   ],
   "app": {
     "background": {
