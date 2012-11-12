@@ -29,6 +29,8 @@ onload = function() {
       '<body>' +
       '  <div>This is guest</div>' +
       '  <div><img src="tia.png" width="27" height="23"/></div>' +
+      '  <div><img src="http://deployment.googleapps.com/_/rsrc/1326052805284/Home/user-resources/google-icons-and-logos/apps-32.png"/></div>' +
+      '  <input type="text" value="foobar"/>' +
       '  <script>' +
       '    window.console.log("console.log message from guest");' +
       '  </script>' +
