@@ -16,15 +16,17 @@
     <!--
     <div><img src="http://deployment.googleapps.com/_/rsrc/1326052805284/Home/user-resources/google-icons-and-logos/apps-32.png" width="27" height="23"/></div>
     -->
-    <div><input type="text" value="emb input1"/></div>
-    <div><input type="text" value="emb input2"/></div>
   </div>
 <div style="border: 1px solid blue;">
   <webview src="data:text/html,<body><input type='text' value='oneoneone'/><input type='text' value='two'/><script>window.console.log('console.log from guest');</script></body>"
       partition="my-partition-1"
+      style="height: 200px"
       id="browser1"></webview>
-  <object type="application/browser-plugin"
-    src="data:text/html,initial"
-    id="browser2"></object>
+    <span>Embedder contents line 1</span>
+</div>
+<div style="margin-top: 2px; border: 1px solid blue; position: relative;">
+  <webview src="http://www.google.com"
+    style="height: 400px; width: 100%"
+    ></webview>
 </div>
 </html>
