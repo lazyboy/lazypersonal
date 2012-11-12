@@ -51,8 +51,10 @@ onresize = function() {
   var tag = getTag();
   if (!tag) return;
   var tagH = Math.max(10, H-120);
-  LOG('set Height:', tagH);
+  //LOG('set Height:', tagH);
   tag.style.height = tagH + 'px';
+  var tagW = Math.max(10, W-120);
+  tag.style.width = tagW + 'px';
 };
 
 window['__change_dimension__'] = function() {
