@@ -8,17 +8,19 @@ var runExp2 = function() {
     return;
   }
   window.console.log('Attaching permission request event handler');
-  el.addEventListener('permissionRequest', function(e) {
+  el.addEventListener('permissionrequest', function(e) {
     window.console.log('On permission request from embedder');
     window.console.log('permission type: ' + e.type);
     e.allow();
   });
+  /*
   window.console.log('Attaching *custom* permission request event handler');
   el.addCustomEventListener('permissionRequest', function(e) {
     window.console.log('On permission request from embedder');
     window.console.log('permission type: ' + e.type);
     e.allow();
   });
+  */
 };
 
 window.setTimeout(runExp2, 5000);

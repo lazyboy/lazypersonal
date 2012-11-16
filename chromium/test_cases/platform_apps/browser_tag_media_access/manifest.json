@@ -6,7 +6,7 @@
   "permissions": [
     "experimental",
     "app.window",
-    "browserTag",
+    "webview",
     "audioCapture",
     "videoCapture"
   ],
