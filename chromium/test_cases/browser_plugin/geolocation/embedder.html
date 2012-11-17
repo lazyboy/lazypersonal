@@ -22,14 +22,13 @@
     <object id="plugin"
       src="FIX_ME/geolocation.html"
       type="application/browser-plugin"
-      width="640"
-      height="480">
+      style="width: 640px; height: 480px;">
     </object>
   </div>
 <script type="text/javascript">
   var bp = document.getElementById('plugin');
   if (!bp) { alert('browser plugin element not found'); return; }
-  var PERMISSION_REQUEST_EVENT_NAME = 'permissionRequest';
+  var PERMISSION_REQUEST_EVENT_NAME = 'permissionrequest';
   window.console.log('attaching requestPermission event listeners');
   bp.addEventListener(PERMISSION_REQUEST_EVENT_NAME, function(e) {
     window.console.log('requestPermission fired, type: ' + e.type);
