@@ -101,7 +101,7 @@ glob.initStep3 = function(div, boilerplateClone, idx) {
 
 glob.navigateTo = function(container, url) {
   container.classList.remove('crashed');
-  container.querySelector('browser').src = url;
+  container.querySelector('webview').src = url;
 };
 
 glob.doLayout = function(container, idx) {
