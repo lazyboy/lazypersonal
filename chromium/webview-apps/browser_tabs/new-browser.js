@@ -17,6 +17,7 @@ glob.browserInit = function(idx, div) {
   var boilerplateClone = boilerplate.cloneNode(true);
   boilerplateClone.id = '';
   div.appendChild(boilerplateClone);
+  boilerplateClone.style.position = 'relative';
 
   var browserHolder = div.querySelector('#browser-holder');
   if (!browserHolder) {
@@ -78,7 +79,8 @@ glob.initStep3 = function(div, boilerplateClone, idx) {
   });
   LOG('loadcommit add value:', y);
 
-  browser.addEventListener('crash', function(e) {
+  browser.addEventListener('exit', function(event) {
+    console.log(event.type);
     div.classList.add('crashed');
   });
   browser.addEventListener('loadstart', function(e) {
@@ -101,7 +103,7 @@ glob.initStep3 = function(div, boilerplateClone, idx) {
 
 glob.navigateTo = function(container, url) {
   container.classList.remove('crashed');
-  container.querySelector('browser').src = url;
+  container.querySelector('webview').src = url;
 };
 
 glob.doLayout = function(container, idx) {
@@ -130,8 +132,8 @@ glob.doLayout = function(container, idx) {
   browser.style.height = windowHeight + 'px';
 
   var sadBrowser = container.querySelector('#sad-browser');
-  sadBrowser.style.width = browser.width + 'px';
-  sadBrowser.style.height = browser.height * 2/3 + 'px';
-  sadBrowser.style.paddingTop = browser.height/3 + 'px';
+  sadBrowser.style.width = windowWidth + 'px';
+  sadBrowser.style.height = windowHeight * 2/3 + 'px';
+  sadBrowser.style.paddingTop = windowHeight/3 + 'px';
 };
 
