@@ -1,0 +1,17 @@
+{
+  "manifest_version": 2,
+  "name": "Speech test",
+  "version": "1",
+  "minimum_chrome_version": "23",
+  "permissions": [
+    "audioCapture",
+    "videoCapture",
+    "experimental",
+    "tts"
+  ],
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  }
+}
