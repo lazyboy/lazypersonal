@@ -1,0 +1,76 @@
+<html>
+  <head>
+    <script type="text/javascript">
+function new_script_object() {
+  return FactoryFunction();
+}
+FactoryFunction = function() {
+  var TestObject = function() {
+  };
+  TestObject.prototype.createObject = function(plugin) {
+    window.console.log('TestObject.prototype.createObject');
+    var new_object = plugin.testCloneObject();
+    return new_object;
+  };
+  var instance = new TestObject();
+  return instance;
+};
+
+      function getEl() {
+        return document.getElementById('plg');
+      }
+      function Save() {
+        window.console.log('Save');
+        var el = getEl();
+        var cw = document.getElementById('aframe').contentWindow;
+        window.console.log('cw while saving: ' + cw);
+        el.remember(cw);
+      }
+      function Drop() {
+        window.console.log('Drop');
+        var el = getEl();
+        el.remember(null);
+        //var cw = el.getRememberedObject();
+        //window.console.log('From remembered: ' + cw);
+      }
+      function Invoke() {
+        window.console.log('Invoke');
+        var el = getEl();
+        el.testScriptObjectInvoke('new_script_object', 'createObject');
+      }
+      function InvokeOther() {
+        window.console.log('InvokeOther');
+        window.console.log('glob_var2: ' + glob_var2);
+        var el = getEl();
+        el.testScriptObjectInvoke(
+            'glob_var2',
+            'createObject');
+      }
+      function Prepare(){
+        window.console.log('Prepare...');
+        glob_var2 = document.getElementById('aframe').contentWindow['new2'];
+        window.console.log('prepared glob_var2: ' + glob_var2);
+      }
+    </script>
+  </head>
+  <body>
+    <div>
+      <embed id="plg"
+          type="application/x-webkit-test-netscape">
+      </embed>
+    </div>
+    <div>
+      <div>iframeA</div>
+      <div><iframe src="a.html" id="aframe"></iframe></div>
+      <div>
+        <button onclick="Save()">save</button>
+        <button onclick="Drop()">drop</button>
+        <button onclick="Invoke()">invoke</button>
+        <button onclick="Prepare()">prepare</button>
+        <button onclick="InvokeOther()">invoke other</button>
+      </div>
+    </div>
+    <script>
+    </script>
+  </body>
+</html>

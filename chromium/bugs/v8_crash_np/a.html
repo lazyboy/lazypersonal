@@ -1,0 +1,29 @@
+<html>
+  <head>
+    <script type="text/javascript">
+function new_script_object() {
+  window.console.log('b.new_script_object');
+  return FactoryFunction();
+}
+FactoryFunction = function() {
+  var TestObject = function() {
+  };
+  TestObject.prototype.createObject = function(plugin) {
+    window.console.log('TestObject.prototype.createObject');
+    var new_object = plugin.testCloneObject();
+    return new_object;
+  };
+  var instance = new TestObject();
+  return instance;
+};
+window['new2'] = new_script_object;
+function test() {
+  window.console.log('test onload');
+}
+    </script>
+  </head>
+  <body>
+    <div>This is frame A, v2</div>
+    <div><a href="b.html">Go to B</a></div>
+  </body>
+</html>
