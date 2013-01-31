@@ -104,10 +104,14 @@ glob.initializeTabContentsAsyncStates = function(div, boilerplateClone, idx) {
 };
 
 glob.handleExit = function(e) {
-  // TODO(lazyboy): Implement different type of exit-s like the browse app demo.
   LOG('handleExit: ' + e.type);
   glob.resetExitedState(this.containerDiv);
-  this.containerDiv.classList.add('crashed');
+  this.containerDiv.classList.add('exited');
+  if (e.type == 'abnormal') {
+    this.containerDiv.classList.add('crashed');
+  } else if (e.type == 'killed') P
+    this.containerDiv.classList.add('killed');
+  }
 };
 
 glob.resetExitedState = function(containerDiv) {
@@ -192,9 +196,9 @@ glob.doLayout = function(container, idx) {
   browser.style.width = windowWidth + 'px';
   browser.style.height = windowHeight + 'px';
 
-  var sadBrowser = container.querySelector('#sad-browser');
-  sadBrowser.style.width = windowWidth + 'px';
-  sadBrowser.style.height = windowHeight * 2/3 + 'px';
-  sadBrowser.style.paddingTop = windowHeight/3 + 'px';
+  var sadWebview = container.querySelector('#sad-webview');
+  sadWebview.style.width = windowWidth + 'px';
+  sadWebview.style.height = windowHeight * 2/3 + 'px';
+  sadWebview.style.paddingTop = windowHeight/3 + 'px';
 };
 
