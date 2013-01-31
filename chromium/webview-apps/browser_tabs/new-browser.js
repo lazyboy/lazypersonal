@@ -24,21 +24,31 @@ glob.browserInit = function(idx, div) {
     ERR('browserHolder not found, abort');
     return;
   }
+  // TODO(lazyboy): A bit weird that we need to use different partition
+  // for different tabs, fix this.
   browserHolder.innerHTML =
     '<webview id="bb-' + idx + '"' +
-    ' src="http://www.google.com"' +
+    ' src="http://www.google.com/"' +
+    ' partition="persist:' + idx + '"' +
     ' style="width:500px; height: 500px;"></webview>';
 
   // Needs to be async at this point.
-  setTimeout(function() { glob.browserInitAsyncStep2(div, boilerplateClone, idx); }, 0);
-//  glob.browserInitAsyncStep2(div, boilerplateClone, idx);
+  setTimeout(function() {
+    new glob.browserInitAsyncStates(div, boilerplateClone, idx);
+  }, 0);
+  //new glob.browserInitAsyncStates(div, boilerplateClone, idx);
 };
 
 
-glob.browserInitAsyncStep2 = function(div, boilerplateClone, idx) {
-  LOG('glob.browserInitAsyncStep2');
-  var webview = document.getElementById('bb-'+idx);
+glob.browserInitAsyncStates = function(div, boilerplateClone, idx) {
+  LOG('glob.browserInitAsyncStates');
+  var webview = document.getElementById('bb-' + idx);
   if (!webview) { ERR('<webview> element not found, die'); return; }
+
+  this.containerDiv = boilerplateClone;
+  var containerDiv = boilerplateClone;
+  this.isLoading = false;
+  var self = this;
 
   // Tricky part, reparent stuff.
   // TODO(lazyboy): Fix. Do we still need this?
@@ -46,60 +56,114 @@ glob.browserInitAsyncStep2 = function(div, boilerplateClone, idx) {
   boilerplateClone.appendChild(webview);
   glob.doLayout(div, idx);
 
-  // Set up click handlers in chrome.
-  boilerplateClone.querySelector('#back').onclick = function() { webview.back(); };
-  boilerplateClone.querySelector('#forward').onclick = function() { webview.forward(); };
-
-  var reloadButton = boilerplateClone.querySelector('#reload');
-  var isLoading = false;
-  reloadButton.onclick = function(e) {
-    LOG('#reload');
-    webview.reload();
+  // Set up click handlers for chrome of the browser.
+  containerDiv.querySelector('#back').onclick = function() {
+    webview.back();
   };
-  /*
-  reloadButton.addEventListener('webkitAnitmationIteration', function(e) {
-    if (!isLoading) {
-    }
-  });
-  */
-  boilerplateClone.querySelector('#terminate').onclick = function() { webview.terminate(); };
 
-  boilerplateClone.querySelector('#home').onclick = function() {
+  containerDiv.querySelector('#forward').onclick = function() {
+    webview.forward();
+  };
+
+  containerDiv.querySelector('#home').onclick = function() {
     glob.navigateTo(boilerplateClone, 'http://www.google.com/');
   };
-  boilerplateClone.querySelector('#location-form').onsubmit = function(e) {
+
+  containerDiv.querySelector('#reload').onclick = function(e) {
+    if (self.isLoading) {
+      webview.stop();
+    } else {
+      webview.reload();
+    }
+  };
+  containerDiv.querySelector('#reload').addEventListener(
+      'webkitAnimationIteration',function(e) {
+        if (!self.isLoading) {
+          self.containerDiv.classList.remove('loading');
+        }
+      });
+  containerDiv.querySelector('#terminate').onclick = function() {
+    webview.terminate();
+  };
+
+  containerDiv.querySelector('#location-form').onsubmit = function(e) {
     e.preventDefault();
-    glob.navigateTo(boilerplateClone, boilerplateClone.querySelector('#location').value);
+    glob.navigateTo(containerDiv,
+        containerDiv.querySelector('#location').value);
   };
 
   // Set up event listeners.
   LOG('Set up event listeners.');
-  webview.addEventListener('loadcommit', function(e) {
-    div.classList.remove('crashed');
-    if (!e.isTopLevel) return;
-    boilerplateClone.querySelector('#location').value = e.url;
-  });
+  webview.addEventListener('exit', glob.handleExit.bind(this));
+  webview.addEventListener('loadstart', glob.handleLoadStart.bind(this));
+  webview.addEventListener('loadstop', glob.handleLoadStop.bind(this));
+  webview.addEventListener('loadabort', glob.handleLoadAbort.bind(this));
+  webview.addEventListener('loadredirect', glob.handleLoadRedirect.bind(this));
+  webview.addEventListener('loadcommit', glob.handleLoadCommit.bind(this));
+};
 
-  webview.addEventListener('exit', function(event) {
-    console.log(event.type);
-    div.classList.add('crashed');
-  });
-  webview.addEventListener('loadstart', function(e) {
-    div.classList.remove('crashed');
-    if (!e.isTopLevel)  return;
-    boilerplateClone.querySelector('#location').value = e.url;
-  });
-  webview.addEventListener('loadabort', function(e) {
-    console.log('loadabort');
-    console.log('  url: ' + e.url);
-    console.log('  isTopLevel: ' + e.isTopLevel);
-    console.log('  type: ' + e.type);
-  });
-  webview.addEventListener('loadredirect', function(e) {
-    div.classList.remove('crashed');
-    if (!e.isTopLevel) return;
-    boilerplateClone.querySelector('#location').value = e.newUrl;
-  });
+glob.handleExit = function(e) {
+  LOG('handleExit: ' + e.type);
+  glob.resetExitedState(this.containerDiv);
+  this.containerDiv.classList.add('crashed');
+};
+
+glob.resetExitedState = function(containerDiv) {
+  containerDiv.classList.remove('exited');
+  containerDiv.classList.remove('crashed');
+  containerDiv.classList.remove('killed');
+};
+
+glob.handleLoadCommit = function(e) {
+  LOG('handleLoadCommit');
+  glob.resetExitedState(this.containerDiv);
+  if (!e.isTopLevel) {
+    return;
+  }
+
+  this.containerDiv.querySelector('#location').value = e.url;
+
+  var webview = this.containerDiv.querySelector('webview');
+  if (!webview) {
+    ERR('Fatal: <webview> not found in container from loadcommit');
+    return;
+  }
+  this.containerDiv.querySelector('#back').disabled = !webview.canGoBack();
+  this.containerDiv.querySelector('#forward').disabled =
+      !webview.canGoForward();
+};
+
+glob.handleLoadStart = function(e) {
+  LOG('handleLoadStart');
+  this.containerDiv.classList.add('loading');
+  this.isLoading =  true;
+  glob.resetExitedState(this.containerDiv);
+  if (!e.isTopLevel) {
+    return;
+  }
+  this.containerDiv.querySelector('#location').value = e.url;
+};
+
+glob.handleLoadStop = function(e) {
+  LOG('handleLoadStop');
+  // We don't remove the loading class immediately, instead we let the animation
+  // finish, so that the spinner doesn't jerkily reset back to the 0 position.
+  this.isLoading = false;
+};
+
+glob.handleLoadAbort = function(e) {
+  LOG('loadAbort');
+  LOG('  url: ' + e.url);
+  LOG('  isTopLevel: ' + e.isTopLevel);
+  LOG('  type: ' + e.type);
+};
+
+glob.handleLoadRedirect = function(e) {
+  glob.resetExitedState(this.containerDiv);
+  if (!e.isTopLevel) {
+    return;
+  }
+  this.containerDiv.querySelector('#location').value = e.newUrl;
 };
 
 glob.navigateTo = function(container, url) {
