@@ -1,4 +1,5 @@
 var glob = {};
+
 window.onresize = function() {
   var browser = namespace._my_browser_;
   if (!browser) { ERR('browser not found.'); return; }
@@ -33,14 +34,14 @@ glob.initializeNewTabContents = function(idx, div) {
     ' style="width:500px; height: 500px;"></webview>';
 
   // Needs to be async at this point.
+  // TODO(lazyboy): Fix this, probably the way we are adding webview into markup
+  // above is to blame?
   setTimeout(function() {
-    new glob.browserInitAsyncStates(div, boilerplateClone, idx);
+    new glob.initializeTabContentsAsyncStates(div, boilerplateClone, idx);
   }, 0);
-  //new glob.browserInitAsyncStates(div, boilerplateClone, idx);
 };
 
-
-glob.browserInitAsyncStates = function(div, boilerplateClone, idx) {
+glob.initializeTabContentsAsyncStates = function(div, boilerplateClone, idx) {
   LOG('glob.browserInitAsyncStates');
   var webview = document.getElementById('bb-' + idx);
   if (!webview) { ERR('<webview> element not found, die'); return; }
@@ -103,6 +104,7 @@ glob.browserInitAsyncStates = function(div, boilerplateClone, idx) {
 };
 
 glob.handleExit = function(e) {
+  // TODO(lazyboy): Implement different type of exit-s like the browse app demo.
   LOG('handleExit: ' + e.type);
   glob.resetExitedState(this.containerDiv);
   this.containerDiv.classList.add('crashed');
