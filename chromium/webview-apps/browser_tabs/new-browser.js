@@ -8,7 +8,7 @@ window.onresize = function() {
   }
 };
 
-glob.browserInit = function(idx, div) {
+glob.initializeNewTabContents = function(idx, div) {
   var boilerplate = document.getElementById('browser-boilerplate');
   if (!boilerplate) {
     ERR('boilerplate element not found');
@@ -25,7 +25,7 @@ glob.browserInit = function(idx, div) {
     return;
   }
   // TODO(lazyboy): A bit weird that we need to use different partition
-  // for different tabs, fix this.
+  // for different tabs, fix this (Otherwise killing one tab would kill all?).
   browserHolder.innerHTML =
     '<webview id="bb-' + idx + '"' +
     ' src="http://www.google.com/"' +

@@ -1,6 +1,10 @@
 namespace = namespace || {};
 
-/** @constructor */
+/**
+ * @constructor
+ * 
+ * Holds the contents for a tab.
+ */
 namespace.Contents = function(tab, tabstrip) {
   LOG('namespace.Contents ctor');
   this.tab_ = tab;
@@ -12,14 +16,10 @@ namespace.Contents = function(tab, tabstrip) {
 namespace.Contents.IDX = 20;
 
 namespace.Contents.prototype.init = function() {
-  this.div_ = namespace.util.createDiv('contents' + this.idx_,
-                                       'one-contents');
-  // ACTUAL <BROWSER> content goes here.
-  //this.div_.innerText = 'Contents, idx: ' + this.idx_;
-  //this.div_.style.display = 'none';
-
-  // HACK HACK.
-  glob.browserInit(this.idx_, this.div_);
+  this.div_ = namespace.util.createDiv('contents' + this.idx_, 'one-contents');
+  // ACTUAL <WEBVIEW> content goes here.
+  // Creates a tab + chrome + contents holder.
+  glob.initializeNewTabContents(this.idx_, this.div_);
 };
 
 namespace.Contents.prototype.getIdx = function() {
@@ -59,23 +59,3 @@ namespace.Contents.prototype.dispose = function() {
   this.div_ = null;
 };
 
-namespace.Contents.prototype.show2 = function(visible) {
-  var b = document.getElementById('bb-'+this.idx_);
-  if (!b) {
-    ERR('browser not found on contents.show');
-    return;
-  }
-  if (visible) {
-    this.div_.style.display = '';
-    b.style.visibility = '';
-    this.div_.appendChild(b);
-  }
-  else {
-    //this.div_.removeChild(b);
-    b.parentNode.removeChild(b);
-    document.body.appendChild(b);
-    b.style.visibility = 'hidden';
-    this.div_.style.display = 'none';
-  }
-  //b.style.visibility = visible ? '' : 'hidden';
-};
