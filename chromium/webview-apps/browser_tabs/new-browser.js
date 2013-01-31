@@ -1,7 +1,7 @@
 var glob = {};
 window.onresize = function() {
   var browser = namespace._my_browser_;
-  if (!browser) { ERR('Where is the browser'); return; }
+  if (!browser) { ERR('browser not found.'); return; }
   var contents = browser.getDefaultContents();
   if (contents) {
     glob.doLayout(contents.getElement(), contents.getIdx());
@@ -28,76 +28,77 @@ glob.browserInit = function(idx, div) {
     '<webview id="bb-' + idx + '"' +
     ' src="http://www.google.com"' +
     ' style="width:500px; height: 500px;"></webview>';
-  setTimeout(function() { glob.initStep2(div, boilerplateClone, idx); }, 0);
+
+  // Needs to be async at this point.
+  setTimeout(function() { glob.browserInitAsyncStep2(div, boilerplateClone, idx); }, 0);
+//  glob.browserInitAsyncStep2(div, boilerplateClone, idx);
 };
 
 
-glob.initStep2 = function(div, boilerplateClone, idx) {
-  LOG('glob.initStep2...');
-  var b = boilerplateClone;
+glob.browserInitAsyncStep2 = function(div, boilerplateClone, idx) {
+  LOG('glob.browserInitAsyncStep2');
+  var webview = document.getElementById('bb-'+idx);
+  if (!webview) { ERR('<webview> element not found, die'); return; }
 
-  //var browser = b.querySelector('webview');
-  //var browser = document.body.querySelector('webview');
-  var browser = document.getElementById('bb-'+idx);
-  if (!browser) { ERR('<browser> element not found, die'); return; }
-  /*
-  browser.src = 'http://www.google.com';
-  browser.width = '400';
-  browser.height = '400';
-  */
-
-  // WHA???
-  browser.parentNode.removeChild(browser);
-  boilerplateClone.appendChild(browser);
+  // Tricky part, reparent stuff.
+  // TODO(lazyboy): Fix. Do we still need this?
+  webview.parentNode.removeChild(webview);
+  boilerplateClone.appendChild(webview);
   glob.doLayout(div, idx);
 
-  window.setTimeout(
-    function() { glob.initStep3(div, boilerplateClone, idx); }, 0);
-};
+  // Set up click handlers in chrome.
+  boilerplateClone.querySelector('#back').onclick = function() { webview.back(); };
+  boilerplateClone.querySelector('#forward').onclick = function() { webview.forward(); };
 
-glob.initStep3 = function(div, boilerplateClone, idx) {
-  LOG('glob.initStep3...');
-  var b = boilerplateClone;
-  var browser = document.getElementById('bb-'+idx);
-  b.querySelector('#back').onclick = function() { browser.back(); };
-  b.querySelector('#forward').onclick = function() { browser.forward(); };
-  b.querySelector('#reload').onclick = function() { browser.reload(); };
-  b.querySelector('#terminate').onclick = function() { browser.terminate(); };
-
-  b.querySelector('#home').onclick = function() {
-    glob.navigateTo(b, 'http://www.google.com/');
+  var reloadButton = boilerplateClone.querySelector('#reload');
+  var isLoading = false;
+  reloadButton.onclick = function(e) {
+    LOG('#reload');
+    webview.reload();
   };
-  b.querySelector('#location-form').onsubmit = function(e) {
+  /*
+  reloadButton.addEventListener('webkitAnitmationIteration', function(e) {
+    if (!isLoading) {
+    }
+  });
+  */
+  boilerplateClone.querySelector('#terminate').onclick = function() { webview.terminate(); };
+
+  boilerplateClone.querySelector('#home').onclick = function() {
+    glob.navigateTo(boilerplateClone, 'http://www.google.com/');
+  };
+  boilerplateClone.querySelector('#location-form').onsubmit = function(e) {
     e.preventDefault();
-    glob.navigateTo(b, b.querySelector('#location').value);
+    glob.navigateTo(boilerplateClone, boilerplateClone.querySelector('#location').value);
   };
 
-  var y = browser.addEventListener('loadcommit', function(e) {
+  // Set up event listeners.
+  LOG('Set up event listeners.');
+  webview.addEventListener('loadcommit', function(e) {
     div.classList.remove('crashed');
     if (!e.isTopLevel) return;
-    b.querySelector('#location').value = e.url;
+    boilerplateClone.querySelector('#location').value = e.url;
   });
-  LOG('loadcommit add value:', y);
 
-  browser.addEventListener('exit', function(event) {
+  webview.addEventListener('exit', function(event) {
     console.log(event.type);
     div.classList.add('crashed');
   });
-  browser.addEventListener('loadstart', function(e) {
+  webview.addEventListener('loadstart', function(e) {
     div.classList.remove('crashed');
     if (!e.isTopLevel)  return;
-    b.querySelector('#location').value = e.url;
+    boilerplateClone.querySelector('#location').value = e.url;
   });
-  browser.addEventListener('loadabort', function(e) {
+  webview.addEventListener('loadabort', function(e) {
     console.log('loadabort');
     console.log('  url: ' + e.url);
     console.log('  isTopLevel: ' + e.isTopLevel);
     console.log('  type: ' + e.type);
   });
-  browser.addEventListener('loadredirect', function(e) {
+  webview.addEventListener('loadredirect', function(e) {
     div.classList.remove('crashed');
     if (!e.isTopLevel) return;
-    b.querySelector('#location').value = e.newUrl;
+    boilerplateClone.querySelector('#location').value = e.newUrl;
   });
 };
 
@@ -107,14 +108,13 @@ glob.navigateTo = function(container, url) {
 };
 
 glob.doLayout = function(container, idx) {
-  LOG('idx:', idx);
+  LOG('doLayout: ' + idx);
   var w = document.body.clientWidth;
   var h = document.body.scrollHeight;
-  LOG('H:', h);
-  document.body.querySelector('#root').style.height = h + 'px';
+  LOG('W:', w, 'H:', h);
 
-  var browser = document.getElementById('bb-'+idx);
-  //var browser = container.querySelector('webview');
+  document.body.querySelector('#root').style.height = h + 'px';
+  var browser = document.getElementById('bb-' + idx);
   var controls = container.querySelector('#controls');
   var controlsHeight = controls.offsetHeight;
   var windowWidth = container.offsetWidth;
@@ -123,11 +123,6 @@ glob.doLayout = function(container, idx) {
   var windowHeight = container.offsetHeight - tabHeight - controlsHeight;
   LOG('layout to: ', windowWidth, windowHeight);
 
-  // WHY?
-  //browser.width = windowWidth;
-  //browser.height = windowHeight - controlsHeight;
-  //browser.setAttribute('width', windowWidth);
-  //browser.setAttribute('height', windowHeight);
   browser.style.width = windowWidth + 'px';
   browser.style.height = windowHeight + 'px';
 
