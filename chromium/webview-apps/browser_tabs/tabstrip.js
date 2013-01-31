@@ -1,16 +1,20 @@
 namespace = namespace || {};
 
 
-/** @constructor */
+/**
+ * @constructor
+ *
+ * Represents (the only?) tab strip in the the browser.
+ */
 namespace.TabStrip = function() {
   this.tabs_ = [];
-  this.div_ = null;
-  this.parent_ = null;
   this.initCalled_ = false;
-  this.contents_ = null;
   this.curTabIdx_ = -1;
   this.idx_ = namespace.TabStrip.IDX++;
 
+  // DOM Elements.
+  this.div_ = null;
+  this.parent_ = null;
   this.addNewTabButton_ = null;
 };
 
@@ -24,14 +28,9 @@ namespace.TabStrip.prototype.init = function(browser, div, opt_url) {
 
   this.div_ = div;
   this.stripDiv_ = namespace.util.createDiv(
-      'tabstrip-' + this.idx_,
-      'one-tabstrip',
-      this.div_);
+      'tabstrip-' + this.idx_, 'one-tabstrip', this.div_);
   this.addNewTabButton_ = namespace.util.createDiv(
-      'addnew-',
-      //'one-addnewtabbutton',
-      'tab-ntp',
-      this.stripDiv_);
+      'addnew-', 'tab-ntp', this.stripDiv_);
   //this.addNewTabButton_.innerText = '+';
   this.addNewTabButton_.onclick = this.onNewTabButton_.bind(this);
 
@@ -85,6 +84,7 @@ namespace.TabStrip.prototype.getCurrentTab = function() {
   return this.tabs_[this.curTabIdx_];
 };
 
+/** @private */
 namespace.TabStrip.prototype.onNewTabButton_ = function() {
   LOG('NTP button clicked');
   var tab = this.addNewTab();
@@ -187,7 +187,7 @@ namespace.TabStrip.prototype.swapRight = function(idx) {
   var tab1 = this.tabs_[pos];
   var tab2 = this.tabs_[pos + 1];
   LOG('SwapRight, idx:', tab1.getIdx(), ',', tab2.getIdx());
-  // swap pos and pos+1
+  // swap pos and pos + 1
   var el1 = this.tabs_[pos].getElement();
   var el2 = this.tabs_[pos + 1].getElement();
   var animEndFunc = function(e) {
@@ -202,8 +202,11 @@ namespace.TabStrip.prototype.swapRight = function(idx) {
   el2.addEventListener('webkitAnimationEnd', animEndFunc);
   el2.style.webkitAnimation = 'moveTabLeft 0.1s ease-out';
 
-  if (this.curTabIdx_ == pos) this.curTabIdx_ = pos + 1;
-  else if (this.curTabIdx_ == pos + 1) this.curTabIdx_ = pos;
+  if (this.curTabIdx_ == pos) {
+    this.curTabIdx_ = pos + 1;
+  } else if (this.curTabIdx_ == pos + 1) {
+    this.curTabIdx_ = pos;
+  }
   this.tabs_[pos] = tab2;
   this.tabs_[pos + 1] = tab1;
   return true;
@@ -223,7 +226,7 @@ namespace.TabStrip.prototype.swapLeft = function(idx) {
   var tab1 = this.tabs_[pos];
   var tab2 = this.tabs_[pos - 1];
   LOG('Swap idx:', tab1.getIdx(), ',', tab2.getIdx());
-  // swap pos and pos+1
+  // swap pos and pos - 1
   var el2 = this.tabs_[pos].getElement();
   var el1 = this.tabs_[pos - 1].getElement();
 
@@ -239,8 +242,11 @@ namespace.TabStrip.prototype.swapLeft = function(idx) {
   el1.addEventListener('webkitAnimationEnd', animEndFunc);
   el1.style.webkitAnimation = 'moveTabRight 0.1s ease-out';
 
-  if (this.curTabIdx_ == pos) this.curTabIdx_ = pos - 1;
-  else if (this.curTabIdx_ == pos - 1) this.curTabIdx_ = pos;
+  if (this.curTabIdx_ == pos) {
+    this.curTabIdx_ = pos - 1;
+  } else if (this.curTabIdx_ == pos - 1) {
+    this.curTabIdx_ = pos;
+  }
   this.tabs_[pos] = tab2;
   this.tabs_[pos - 1] = tab1;
   return true;

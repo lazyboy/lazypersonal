@@ -31,23 +31,6 @@ namespace.Tab.prototype.getTitle = function() {
 namespace.Tab.prototype.getElement = function() {
   if (!this.div_) {
     var d = document.createElement('div');
-    /*
-    d.className = 'one-tab';
-    d.setAttribute('draggable', true);
-    d.onclick = this.selectTab_.bind(this);
-
-    var closeButton = namespace.util.createDiv(
-        '', 'one-tabclosebutton', d);
-    closeButton.innerText = 'X';
-    closeButton.onclick = this.onCloseClick_.bind(this);
-    d.appendChild(closeButton);
-
-    var titleDiv = document.createElement('div');
-    titleDiv.className = 'one-tab-title';
-    titleDiv.innerText = this.getTitle();
-    d.appendChild(titleDiv);
-    */
-
     d.className = 'innertab tab';
     d.onclick = this.selectTab_.bind(this);
     d.setAttribute('draggable', true);

@@ -37,77 +37,10 @@
   /*min-height: 480px;*/
 }
 
-.one-addnewtabbutton {
-  width: 10;
 
-  /* boo - copy one-tab */
-  border: 1px solid #333;
-  /*max-width: 180px;*/
-  font-size: 14px;
-  color: black;
-  height: 24px;
-  background-color: #ddd;
-  padding: 0 8px;
-  line-height: 24px;
-  display: inline-block;
-}
-
-.one-tab {
-  border: 1px solid #333;
-  max-width: 180px;
-  font-size: 14px;
-  color: black;
-  height: 24px;
-  background-color: #ddd;
-  padding: 0 8px;
-  /* boo */
-  display: inline-block;
-  margin-right: 1px;
-
-  position: relative;
-}
-
-.one-tab.current {
-  background-color: #eee !important;
-  border-bottom: 1px solid #eee !important;
-}
-
-.one-tab:hover {
-  -webkit-transition: background-color 0.5s;
-  background-color: #eee;
-}
-
-.one-tab-title {
-  color: black;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  line-height: 24px;
-  margin-right: 16px;
-  /*display: inline-block;*/
-}
-
-.one-tabclosebutton {
-  color: black;
-  border: 1px solid black;
-  width: 16px;
-  -webkit-border-radius: 16px;
-  margin-left: 4px;
-  text-align: center;
-  /* boo */
-  /*display: inline-block;*/
-  position: absolute;
-  right: 4px;
-  top: 2px;
-  opacity: 0.1;
-}
-
-.one-tabclosebutton:hover {
-  opacity: 1.0;
-  -webkit-transition: opacity 0.5s;
-}
-
+/* ================ */
 /* From browser app */
+/* ================ */
 
 /* The reload button turns into a spinning trobber */
 .loading #reload {
