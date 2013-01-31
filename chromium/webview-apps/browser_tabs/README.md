@@ -1,7 +1,7 @@
 # Browser with Tabs
 
 Original browser tag example from here:
-http://github.com/GoogleChrome/chrome-app-samples/tree/master/browser-tag
+http://github.com/GoogleChrome/chrome-app-samples/tree/master/browser
 
 Added tabbing on top of the app.
 
