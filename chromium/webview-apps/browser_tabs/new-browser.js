@@ -109,7 +109,7 @@ glob.handleExit = function(e) {
   this.containerDiv.classList.add('exited');
   if (e.type == 'abnormal') {
     this.containerDiv.classList.add('crashed');
-  } else if (e.type == 'killed') P
+  } else if (e.type == 'killed') {
     this.containerDiv.classList.add('killed');
   }
 };
