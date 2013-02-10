@@ -181,45 +181,6 @@
   border-left: 20px solid black;
 }
 
-/** CLOSE BUTTON */
-.close-button {
-  width: 120px;
-  height: 120px;
-  -webkit-border-radius: 120px;
-  background-color: gray;
-  position: absolute;
-  opacity: 0.2;
-}
-.close-button:hover {
-  opacity: 1.0;
-  -webkit-transition: opacity 0.5s ease-in;
-}
-.close-button-rotate {
-  -webkit-transform: rotate(45deg);
-  -webkit-transform-origin-x: 50px;
-  -webkit-transform-origin-y: 50px;
-  position: relative;
-  top: 10px;
-  left: 10px;
-}
-.close-button-rotate:before { /* horz */
-  content: "";
-  width: 100px;
-  height: 20px;
-  background-color: black;
-  position: absolute;
-  top: 40px;
-}
-.close-button-rotate:after { /* vert */
-  content: "";
-  background-color: black;
-  width: 20px;
-  height: 100px;
-  position: absolute;
-  left: 40px;
-}
-/** END CLOSE BUTTON */
-
 /** CLOSE BUTTON 16x16 */
 .close-container {
   width: 16px;

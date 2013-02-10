@@ -1,10 +1,19 @@
 namespace = namespace || {};
 
-/** @constructor */
+/**
+ * @constructor
+ *
+ * Represents a single tab in the tabstrip.
+ * Also holds a reference to the contents of the tab (|contents_|).
+ */
 namespace.Tab = function() {
+  // TODO(lazyboy): Once we have title, use that.
   this.title_ = 'about:blank';
+
   this.div_ = null;
+  // The tabstrip.
   this.parent_ = null;
+
   this.initCalled_ = false;
   this.idx_ = namespace.Tab.IDX++;
 };
@@ -16,29 +25,12 @@ namespace.Tab.prototype.setTitle = function(title) {
 };
 
 namespace.Tab.prototype.getTitle = function() {
-  return '('+this.idx_+')'+this.title_;
+  return '(' + this.idx_ + ')' + this.title_;
 };
 
 namespace.Tab.prototype.getElement = function() {
   if (!this.div_) {
     var d = document.createElement('div');
-    /*
-    d.className = 'one-tab';
-    d.setAttribute('draggable', true);
-    d.onclick = this.selectTab_.bind(this);
-
-    var closeButton = namespace.util.createDiv(
-        '', 'one-tabclosebutton', d);
-    closeButton.innerText = 'X';
-    closeButton.onclick = this.onCloseClick_.bind(this);
-    d.appendChild(closeButton);
-
-    var titleDiv = document.createElement('div');
-    titleDiv.className = 'one-tab-title';
-    titleDiv.innerText = this.getTitle();
-    d.appendChild(titleDiv);
-    */
-
     d.className = 'innertab tab';
     d.onclick = this.selectTab_.bind(this);
     d.setAttribute('draggable', true);
@@ -85,7 +77,9 @@ namespace.Tab.prototype.getContents = function() {
 
 namespace.Tab.prototype.getInsertableDiv = function() {
   var div = this.getDiv();
-  if (div.parentNode) div.parentNode.removeChild(div);
+  if (div.parentNode) {
+    div.parentNode.removeChild(div);
+  }
   return div;
 };
 
@@ -95,7 +89,9 @@ namespace.Tab.prototype.onCloseClick_ = function(e) {
   e.stopPropagation();
 };
 
-namespace.Tab.prototype.getIdx = function() { return this.idx_; };
+namespace.Tab.prototype.getIdx = function() {
+  return this.idx_;
+};
 
 namespace.Tab.prototype.dispose = function() {
   LOG('Dispose tab /w idx', this.idx_);
@@ -124,14 +120,17 @@ namespace.Tab.prototype.selectTab_ = function() {
   LOG('Tab.selectTab_');
   this.parent_.selectTab(this.idx_);
 };
+
 namespace.Tab.prototype.onMouseOver_ = function(e) {
   //LOG('onMouseOver_');
   this.switchInnerClass_(true, 'hovered');
 };
+
 namespace.Tab.prototype.onMouseOut_ = function(e) {
   //LOG('onMouseOut_');
   this.switchInnerClass_(false, 'hovered');
 };
+
 namespace.Tab.prototype.switchInnerClass_ = function(add, className) {
   var func = add ? 'add' : 'remove';
   this.div_.getElementsByClassName('middle2')[0].classList[func](className);
@@ -168,6 +167,7 @@ namespace.Tab.prototype.dragStart = function(e) {
   window.setTimeout(function() { p.appendChild(fakeEl); }, 0);
   //this.div_.parentNode.appendChild(this.fakeEl_);
 };
+
 namespace.Tab.prototype.drag = function(e) {
   var dx = e.x - this.startX_;
   if (!e.x && !e.y) {
@@ -204,6 +204,7 @@ namespace.Tab.prototype.drag = function(e) {
 
   //e.preventDefault();
 };
+
 namespace.Tab.prototype.dragEnd = function(e) {
   LOG('dragEnd');
   this.div_.style.position = 'relative';

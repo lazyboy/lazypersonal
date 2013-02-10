@@ -1,14 +1,15 @@
 var glob = {};
+
 window.onresize = function() {
   var browser = namespace._my_browser_;
-  if (!browser) { ERR('Where is the browser'); return; }
+  if (!browser) { ERR('browser not found.'); return; }
   var contents = browser.getDefaultContents();
   if (contents) {
     glob.doLayout(contents.getElement(), contents.getIdx());
   }
 };
 
-glob.browserInit = function(idx, div) {
+glob.initializeNewTabContents = function(idx, div) {
   var boilerplate = document.getElementById('browser-boilerplate');
   if (!boilerplate) {
     ERR('boilerplate element not found');
@@ -24,81 +25,151 @@ glob.browserInit = function(idx, div) {
     ERR('browserHolder not found, abort');
     return;
   }
+  // TODO(lazyboy): A bit weird that we need to use different partition
+  // for different tabs, fix this (Otherwise killing one tab would kill all?).
   browserHolder.innerHTML =
     '<webview id="bb-' + idx + '"' +
-    ' src="http://www.google.com"' +
+    ' src="http://www.google.com/"' +
+    ' partition="persist:' + idx + '"' +
     ' style="width:500px; height: 500px;"></webview>';
-  setTimeout(function() { glob.initStep2(div, boilerplateClone, idx); }, 0);
+
+  // Needs to be async at this point.
+  // TODO(lazyboy): Fix this, probably the way we are adding webview into markup
+  // above is to blame?
+  setTimeout(function() {
+    new glob.initializeTabContentsAsyncStates(div, boilerplateClone, idx);
+  }, 0);
 };
 
+glob.initializeTabContentsAsyncStates = function(div, boilerplateClone, idx) {
+  LOG('glob.browserInitAsyncStates');
+  var webview = document.getElementById('bb-' + idx);
+  if (!webview) { ERR('<webview> element not found, die'); return; }
 
-glob.initStep2 = function(div, boilerplateClone, idx) {
-  LOG('glob.initStep2...');
-  var b = boilerplateClone;
+  this.containerDiv = boilerplateClone;
+  var containerDiv = boilerplateClone;
+  this.isLoading = false;
+  var self = this;
 
-  //var browser = b.querySelector('webview');
-  //var browser = document.body.querySelector('webview');
-  var browser = document.getElementById('bb-'+idx);
-  if (!browser) { ERR('<browser> element not found, die'); return; }
-  /*
-  browser.src = 'http://www.google.com';
-  browser.width = '400';
-  browser.height = '400';
-  */
-
-  // WHA???
-  browser.parentNode.removeChild(browser);
-  boilerplateClone.appendChild(browser);
+  // Tricky part, reparent stuff.
+  // TODO(lazyboy): Fix. Do we still need this?
+  webview.parentNode.removeChild(webview);
+  boilerplateClone.appendChild(webview);
   glob.doLayout(div, idx);
 
-  window.setTimeout(
-    function() { glob.initStep3(div, boilerplateClone, idx); }, 0);
+  // Set up click handlers for chrome of the browser.
+  containerDiv.querySelector('#back').onclick = function() {
+    webview.back();
+  };
+
+  containerDiv.querySelector('#forward').onclick = function() {
+    webview.forward();
+  };
+
+  containerDiv.querySelector('#home').onclick = function() {
+    glob.navigateTo(boilerplateClone, 'http://www.google.com/');
+  };
+
+  containerDiv.querySelector('#reload').onclick = function(e) {
+    if (self.isLoading) {
+      webview.stop();
+    } else {
+      webview.reload();
+    }
+  };
+  containerDiv.querySelector('#reload').addEventListener(
+      'webkitAnimationIteration',function(e) {
+        if (!self.isLoading) {
+          self.containerDiv.classList.remove('loading');
+        }
+      });
+  containerDiv.querySelector('#terminate').onclick = function() {
+    webview.terminate();
+  };
+
+  containerDiv.querySelector('#location-form').onsubmit = function(e) {
+    e.preventDefault();
+    glob.navigateTo(containerDiv,
+        containerDiv.querySelector('#location').value);
+  };
+
+  // Set up event listeners.
+  LOG('Set up event listeners.');
+  webview.addEventListener('exit', glob.handleExit.bind(this));
+  webview.addEventListener('loadstart', glob.handleLoadStart.bind(this));
+  webview.addEventListener('loadstop', glob.handleLoadStop.bind(this));
+  webview.addEventListener('loadabort', glob.handleLoadAbort.bind(this));
+  webview.addEventListener('loadredirect', glob.handleLoadRedirect.bind(this));
+  webview.addEventListener('loadcommit', glob.handleLoadCommit.bind(this));
 };
 
-glob.initStep3 = function(div, boilerplateClone, idx) {
-  LOG('glob.initStep3...');
-  var b = boilerplateClone;
-  var browser = document.getElementById('bb-'+idx);
-  b.querySelector('#back').onclick = function() { browser.back(); };
-  b.querySelector('#forward').onclick = function() { browser.forward(); };
-  b.querySelector('#reload').onclick = function() { browser.reload(); };
-  b.querySelector('#terminate').onclick = function() { browser.terminate(); };
+glob.handleExit = function(e) {
+  LOG('handleExit: ' + e.type);
+  glob.resetExitedState(this.containerDiv);
+  this.containerDiv.classList.add('exited');
+  if (e.type == 'abnormal') {
+    this.containerDiv.classList.add('crashed');
+  } else if (e.type == 'killed') {
+    this.containerDiv.classList.add('killed');
+  }
+};
 
-  b.querySelector('#home').onclick = function() {
-    glob.navigateTo(b, 'http://www.google.com/');
-  };
-  b.querySelector('#location-form').onsubmit = function(e) {
-    e.preventDefault();
-    glob.navigateTo(b, b.querySelector('#location').value);
-  };
+glob.resetExitedState = function(containerDiv) {
+  containerDiv.classList.remove('exited');
+  containerDiv.classList.remove('crashed');
+  containerDiv.classList.remove('killed');
+};
 
-  var y = browser.addEventListener('loadcommit', function(e) {
-    div.classList.remove('crashed');
-    if (!e.isTopLevel) return;
-    b.querySelector('#location').value = e.url;
-  });
-  LOG('loadcommit add value:', y);
+glob.handleLoadCommit = function(e) {
+  LOG('handleLoadCommit');
+  glob.resetExitedState(this.containerDiv);
+  if (!e.isTopLevel) {
+    return;
+  }
 
-  browser.addEventListener('exit', function(event) {
-    console.log(event.type);
-    div.classList.add('crashed');
-  });
-  browser.addEventListener('loadstart', function(e) {
-    div.classList.remove('crashed');
-    if (!e.isTopLevel)  return;
-    b.querySelector('#location').value = e.url;
-  });
-  browser.addEventListener('loadabort', function(e) {
-    console.log('loadabort');
-    console.log('  url: ' + e.url);
-    console.log('  isTopLevel: ' + e.isTopLevel);
-    console.log('  type: ' + e.type);
-  });
-  browser.addEventListener('loadredirect', function(e) {
-    div.classList.remove('crashed');
-    if (!e.isTopLevel) return;
-    b.querySelector('#location').value = e.newUrl;
-  });
+  this.containerDiv.querySelector('#location').value = e.url;
+
+  var webview = this.containerDiv.querySelector('webview');
+  if (!webview) {
+    ERR('Fatal: <webview> not found in container from loadcommit');
+    return;
+  }
+  this.containerDiv.querySelector('#back').disabled = !webview.canGoBack();
+  this.containerDiv.querySelector('#forward').disabled =
+      !webview.canGoForward();
+};
+
+glob.handleLoadStart = function(e) {
+  LOG('handleLoadStart');
+  this.containerDiv.classList.add('loading');
+  this.isLoading =  true;
+  glob.resetExitedState(this.containerDiv);
+  if (!e.isTopLevel) {
+    return;
+  }
+  this.containerDiv.querySelector('#location').value = e.url;
+};
+
+glob.handleLoadStop = function(e) {
+  LOG('handleLoadStop');
+  // We don't remove the loading class immediately, instead we let the animation
+  // finish, so that the spinner doesn't jerkily reset back to the 0 position.
+  this.isLoading = false;
+};
+
+glob.handleLoadAbort = function(e) {
+  LOG('loadAbort');
+  LOG('  url: ' + e.url);
+  LOG('  isTopLevel: ' + e.isTopLevel);
+  LOG('  type: ' + e.type);
+};
+
+glob.handleLoadRedirect = function(e) {
+  glob.resetExitedState(this.containerDiv);
+  if (!e.isTopLevel) {
+    return;
+  }
+  this.containerDiv.querySelector('#location').value = e.newUrl;
 };
 
 glob.navigateTo = function(container, url) {
@@ -107,14 +178,13 @@ glob.navigateTo = function(container, url) {
 };
 
 glob.doLayout = function(container, idx) {
-  LOG('idx:', idx);
+  LOG('doLayout: ' + idx);
   var w = document.body.clientWidth;
   var h = document.body.scrollHeight;
-  LOG('H:', h);
-  document.body.querySelector('#root').style.height = h + 'px';
+  LOG('W:', w, 'H:', h);
 
-  var browser = document.getElementById('bb-'+idx);
-  //var browser = container.querySelector('webview');
+  document.body.querySelector('#root').style.height = h + 'px';
+  var browser = document.getElementById('bb-' + idx);
   var controls = container.querySelector('#controls');
   var controlsHeight = controls.offsetHeight;
   var windowWidth = container.offsetWidth;
@@ -123,17 +193,12 @@ glob.doLayout = function(container, idx) {
   var windowHeight = container.offsetHeight - tabHeight - controlsHeight;
   LOG('layout to: ', windowWidth, windowHeight);
 
-  // WHY?
-  //browser.width = windowWidth;
-  //browser.height = windowHeight - controlsHeight;
-  //browser.setAttribute('width', windowWidth);
-  //browser.setAttribute('height', windowHeight);
   browser.style.width = windowWidth + 'px';
   browser.style.height = windowHeight + 'px';
 
-  var sadBrowser = container.querySelector('#sad-browser');
-  sadBrowser.style.width = windowWidth + 'px';
-  sadBrowser.style.height = windowHeight * 2/3 + 'px';
-  sadBrowser.style.paddingTop = windowHeight/3 + 'px';
+  var sadWebview = container.querySelector('#sad-webview');
+  sadWebview.style.width = windowWidth + 'px';
+  sadWebview.style.height = windowHeight * 2/3 + 'px';
+  sadWebview.style.paddingTop = windowHeight/3 + 'px';
 };
 

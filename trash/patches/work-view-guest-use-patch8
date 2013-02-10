@@ -1,0 +1,923 @@
+diff --git a/content/browser/renderer_host/render_process_host_impl.cc b/content/browser/renderer_host/render_process_host_impl.cc
+index 0cb1b24..6a0d37b 100644
+--- a/content/browser/renderer_host/render_process_host_impl.cc
++++ b/content/browser/renderer_host/render_process_host_impl.cc
+@@ -768,6 +768,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
+     switches::kEnableAccessibilityLogging,
+     switches::kEnableBrowserPluginCompositing,
+     switches::kEnableBrowserPluginForAllViewTypes,
++    switches::kEnableBrowserPluginGuestViews,
+     switches::kEnableCssTransformPinch,
+     switches::kEnableDCHECK,
+     switches::kEnableEncryptedMedia,
+diff --git a/content/browser/renderer_host/render_widget_host_view_guest.cc b/content/browser/renderer_host/render_widget_host_view_guest.cc
+index 5b88b23..9ac291d 100644
+--- a/content/browser/renderer_host/render_widget_host_view_guest.cc
++++ b/content/browser/renderer_host/render_widget_host_view_guest.cc
+@@ -8,6 +8,7 @@
+ #include "content/browser/browser_plugin/browser_plugin_guest.h"
+ #include "content/browser/renderer_host/render_view_host_impl.h"
+ #include "content/browser/renderer_host/render_widget_host_view_guest.h"
++#include "content/browser/web_contents/web_contents_impl.h"
+ #include "content/common/browser_plugin_messages.h"
+ #include "content/common/gpu/gpu_messages.h"
+ #include "content/common/view_messages.h"
+@@ -19,10 +20,15 @@ namespace content {
+ 
+ RenderWidgetHostViewGuest::RenderWidgetHostViewGuest(
+     RenderWidgetHost* widget_host,
+-    BrowserPluginGuest* guest)
++    BrowserPluginGuest* guest,
++    bool enable_compositing,
++    RenderWidgetHostView* platform_view)
+     : host_(RenderWidgetHostImpl::From(widget_host)),
+       is_hidden_(false),
+-      guest_(guest) {
++      guest_(guest),
++      enable_compositing_(enable_compositing),
++      platform_view_(static_cast<RenderWidgetHostViewPort*>(platform_view)) {
++  printf("++++ %s, enable_compositing: %d\n", __PRETTY_FUNCTION__, enable_compositing_);
+   host_->SetView(this);
+ }
+ 
+@@ -33,7 +39,18 @@ RenderWidgetHost* RenderWidgetHostViewGuest::GetRenderWidgetHost() const {
+   return host_;
+ }
+ 
++RenderWidgetHostViewPort* RenderWidgetHostViewGuest::platform_view() const {
++  return platform_view_;
++}
++
+ void RenderWidgetHostViewGuest::WasShown() {
++  if (platform_view()) {
++    platform_view()->WasShown();
++    return;
++  }
++
++  NOTREACHED();
++
+   if (!is_hidden_)
+     return;
+ 
+@@ -42,6 +59,12 @@ void RenderWidgetHostViewGuest::WasShown() {
+ }
+ 
+ void RenderWidgetHostViewGuest::WasHidden() {
++  if (platform_view()) {
++    platform_view()->WasHidden();
++    return;
++  }
++  NOTREACHED();
++
+   if (is_hidden_)
+     return;
+ 
+@@ -50,11 +73,21 @@ void RenderWidgetHostViewGuest::WasHidden() {
+ }
+ 
+ void RenderWidgetHostViewGuest::SetSize(const gfx::Size& size) {
+-  size_ = size;
+-  host_->WasResized();
++  if (platform_view()) {
++    platform_view()->SetSize(size);
++  }
++
++  if (enable_compositing_) {
++    size_ = size;
++//    host_->WasResized();
++  }
+ }
+ 
+ gfx::Rect RenderWidgetHostViewGuest::GetBoundsInRootWindow() {
++  if (platform_view())
++    return platform_view()->GetBoundsInRootWindow();
++
++  NOTREACHED();
+   return GetViewBounds();
+ }
+ 
+@@ -63,98 +96,155 @@ gfx::GLSurfaceHandle RenderWidgetHostViewGuest::GetCompositingSurface() {
+ }
+ 
+ void RenderWidgetHostViewGuest::Show() {
++  if (platform_view()) {
++    platform_view()->Show();
++    return;
++  }
++
++  NOTREACHED();
+   WasShown();
+ }
+ 
+ void RenderWidgetHostViewGuest::Hide() {
++  if (platform_view()) {
++    platform_view()->Hide();
++    return;
++  }
++
++  NOTREACHED();
+   WasHidden();
+ }
+ 
+ bool RenderWidgetHostViewGuest::IsShowing() {
++  if (platform_view())
++    return platform_view()->IsShowing();
++
+   return !is_hidden_;
+ }
+ 
+ gfx::Rect RenderWidgetHostViewGuest::GetViewBounds() const {
++  if (platform_view())
++    return platform_view()->GetViewBounds();
++
+   return gfx::Rect(0, 0, size_.width(), size_.height());
+ }
+ 
+ void RenderWidgetHostViewGuest::RenderViewGone(base::TerminationStatus status,
+                                                int error_code) {
+-  Destroy();
++  if (platform_view()) {
++    platform_view()->RenderViewGone(status, error_code);
++  }
++
++  if (enable_compositing_) {
++    printf("+++ %s, calling Destroy()\n", __PRETTY_FUNCTION__);
++    Destroy();
++  }
+ }
+ 
+ void RenderWidgetHostViewGuest::Destroy() {
+-  // The RenderWidgetHost's destruction led here, so don't call it.
+-  host_ = NULL;
+-  MessageLoop::current()->DeleteSoon(FROM_HERE, this);
++  if (platform_view()) {
++    platform_view()->Destroy();
++  }
++
++  if (enable_compositing_) {
++    printf("+++ %s, calling DeleteSoon()\n", __PRETTY_FUNCTION__);
++    // The RenderWidgetHost's destruction led here, so don't call it.
++    host_ = NULL;
++    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
++  }
+ }
+ 
+ void RenderWidgetHostViewGuest::SetTooltipText(const string16& tooltip_text) {
++  if (platform_view())
++    platform_view()->SetTooltipText(tooltip_text);
+ }
+ 
+ void RenderWidgetHostViewGuest::AcceleratedSurfaceBuffersSwapped(
+     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
+     int gpu_host_id) {
+-  guest_->SendMessageToEmbedder(
+-      new BrowserPluginMsg_BuffersSwapped(
+-          guest_->embedder_routing_id(),
+-          guest_->instance_id(),
+-          params.size,
+-          params.mailbox_name,
+-          params.route_id,
+-          gpu_host_id));
++  if (enable_compositing_) {
++    guest_->SendMessageToEmbedder(
++        new BrowserPluginMsg_BuffersSwapped(
++            guest_->embedder_routing_id(),
++            guest_->instance_id(),
++            params.size,
++            params.mailbox_name,
++            params.route_id,
++            gpu_host_id));
++  } else {
++    platform_view()->AcceleratedSurfaceBuffersSwapped(params, gpu_host_id);
++  }
+ }
+ 
+ void RenderWidgetHostViewGuest::AcceleratedSurfacePostSubBuffer(
+     const GpuHostMsg_AcceleratedSurfacePostSubBuffer_Params& params,
+     int gpu_host_id) {
+-  guest_->SendMessageToEmbedder(
+-      new BrowserPluginMsg_BuffersSwapped(
+-          guest_->embedder_routing_id(),
+-          guest_->instance_id(),
+-          params.surface_size,
+-          params.mailbox_name,
+-          params.route_id,
+-          gpu_host_id));
++  if (enable_compositing_) {
++    guest_->SendMessageToEmbedder(
++        new BrowserPluginMsg_BuffersSwapped(
++            guest_->embedder_routing_id(),
++            guest_->instance_id(),
++            params.surface_size,
++            params.mailbox_name,
++            params.route_id,
++            gpu_host_id));
++  } else {
++    platform_view()->AcceleratedSurfacePostSubBuffer(params, gpu_host_id);
++  }
++
+ }
+ 
+ void RenderWidgetHostViewGuest::SetBounds(const gfx::Rect& rect) {
+-  SetSize(rect.size());
++  if (platform_view()) {
++    platform_view()->SetBounds(rect);
++  }
++  if (enable_compositing_) {
++    SetSize(rect.size());
++  }
+ }
+ 
+ void RenderWidgetHostViewGuest::InitAsChild(
+     gfx::NativeView parent_view) {
+-  NOTIMPLEMENTED();
++  if (platform_view()) {
++    platform_view()->InitAsChild(parent_view);
++    return;
++  }
++
++  NOTREACHED();
+ }
+ 
+ void RenderWidgetHostViewGuest::InitAsPopup(
+     RenderWidgetHostView* parent_host_view, const gfx::Rect& pos) {
++  // This should never get called.
+   NOTIMPLEMENTED();
+ }
+ 
+ void RenderWidgetHostViewGuest::InitAsFullscreen(
+     RenderWidgetHostView* reference_host_view) {
++  // This should never get called.
+   NOTIMPLEMENTED();
+ }
+ 
+ gfx::NativeView RenderWidgetHostViewGuest::GetNativeView() const {
+-  NOTIMPLEMENTED();
+-  return NULL;
++  return guest_->embedder_web_contents()->GetRenderWidgetHostView()->
++      GetNativeView();
+ }
+ 
+ gfx::NativeViewId RenderWidgetHostViewGuest::GetNativeViewId() const {
+-  NOTIMPLEMENTED();
+-  return static_cast<gfx::NativeViewId>(NULL);
++  return guest_->embedder_web_contents()->GetRenderWidgetHostView()->
++      GetNativeViewId();
+ }
+ 
+ gfx::NativeViewAccessible RenderWidgetHostViewGuest::GetNativeViewAccessible() {
+-  NOTIMPLEMENTED();
+-  return NULL;
++  return guest_->embedder_web_contents()->GetRenderWidgetHostView()->
++      GetNativeViewAccessible();
+ }
+ 
+ void RenderWidgetHostViewGuest::MovePluginWindows(
+     const gfx::Vector2d& scroll_offset,
+     const std::vector<webkit::npapi::WebPluginGeometry>& moves) {
++  if (platform_view())
++    platform_view()->MovePluginWindows(scroll_offset, moves);
+ }
+ 
+ void RenderWidgetHostViewGuest::Focus() {
+@@ -168,26 +258,44 @@ bool RenderWidgetHostViewGuest::HasFocus() const {
+ }
+ 
+ bool RenderWidgetHostViewGuest::IsSurfaceAvailableForCopy() const {
++  if (enable_compositing_) {
++    return true;
++  }
++  if (platform_view())
++    return platform_view()->IsSurfaceAvailableForCopy();
++
+   return true;
+ }
+ 
+ void RenderWidgetHostViewGuest::UpdateCursor(const WebCursor& cursor) {
++  if (platform_view())
++    platform_view()->UpdateCursor(cursor);
+ }
+ 
+ void RenderWidgetHostViewGuest::SetIsLoading(bool is_loading) {
++  if (platform_view())
++    platform_view()->SetIsLoading(is_loading);
+ }
+ 
+ void RenderWidgetHostViewGuest::TextInputStateChanged(
+     const ViewHostMsg_TextInputState_Params& params) {
++  if (platform_view())
++    platform_view()->TextInputStateChanged(params);
+ }
+ 
+ void RenderWidgetHostViewGuest::ImeCancelComposition() {
++  if (platform_view())
++    platform_view()->ImeCancelComposition();
+ }
+ 
+ void RenderWidgetHostViewGuest::DidUpdateBackingStore(
+     const gfx::Rect& scroll_rect,
+     const gfx::Vector2d& scroll_delta,
+     const std::vector<gfx::Rect>& copy_rects) {
++  if (platform_view()) {
++    platform_view()->DidUpdateBackingStore(
++        scroll_rect, scroll_delta, copy_rects);
++  }
+ }
+ 
+ void RenderWidgetHostViewGuest::SelectionBoundsChanged(
+@@ -195,63 +303,118 @@ void RenderWidgetHostViewGuest::SelectionBoundsChanged(
+     WebKit::WebTextDirection start_direction,
+     const gfx::Rect& end_rect,
+     WebKit::WebTextDirection end_direction) {
++  if (enable_compositing_) {
++    printf("++++ %s, skip\n", __PRETTY_FUNCTION__);
++  } else {
++    if (platform_view()) {
++      platform_view()->SelectionBoundsChanged(
++          start_rect, start_direction, end_rect, end_direction);
++    }
++  }
+ }
+ 
+ BackingStore* RenderWidgetHostViewGuest::AllocBackingStore(
+     const gfx::Size& size) {
++  if (enable_compositing_) {
++    printf("++++ %s, skip\n", __PRETTY_FUNCTION__);
++  } else {
++    if (platform_view())
++      return platform_view()->AllocBackingStore(size);
++  }
+   return NULL;
+ }
+ 
+ void RenderWidgetHostViewGuest::CopyFromCompositingSurface(
+     const gfx::Rect& src_subrect,
+-    const gfx::Size& /* dst_size */,
++    const gfx::Size& dst_size,
+     const base::Callback<void(bool)>& callback,
+     skia::PlatformBitmap* output) {
++  if (enable_compositing_) {
++    printf("+++ %s, skip\n", __PRETTY_FUNCTION__);
++  } else {
++    if (platform_view()) {
++      return platform_view()->CopyFromCompositingSurface(
++          src_subrect, dst_size, callback, output);
++    }
++  }
+ }
+ 
+ void RenderWidgetHostViewGuest::AcceleratedSurfaceSuspend() {
++  //if (platform_view())
++  if (!enable_compositing_)
++    platform_view()->AcceleratedSurfaceSuspend();
+ }
+ 
+ bool RenderWidgetHostViewGuest::HasAcceleratedSurface(
+       const gfx::Size& desired_size) {
++  if (enable_compositing_) {
++    return false;
++  }
++
++  if (platform_view())
++    return platform_view()->HasAcceleratedSurface(desired_size);
++
+   return false;
+ }
+ 
+ void RenderWidgetHostViewGuest::SetBackground(const SkBitmap& background) {
++  if (platform_view())
++    platform_view()->SetBackground(background);
+ }
+ 
+ void RenderWidgetHostViewGuest::SetHasHorizontalScrollbar(
+     bool has_horizontal_scrollbar) {
++  if (platform_view())
++    platform_view()->SetHasHorizontalScrollbar(has_horizontal_scrollbar);
+ }
+ 
+ void RenderWidgetHostViewGuest::SetScrollOffsetPinning(
+     bool is_pinned_to_left, bool is_pinned_to_right) {
++  if (platform_view()) {
++    platform_view()->SetScrollOffsetPinning(
++        is_pinned_to_left, is_pinned_to_right);
++  }
+ }
+ 
+ void RenderWidgetHostViewGuest::OnAcceleratedCompositingStateChange() {
+ }
+ 
+ bool RenderWidgetHostViewGuest::LockMouse() {
++  if (platform_view())
++    return platform_view()->LockMouse();
++
+   return false;
+ }
+ 
+ void RenderWidgetHostViewGuest::UnlockMouse() {
++  if (platform_view())
++    return platform_view()->UnlockMouse();
+ }
+ 
+ #if defined(OS_MACOSX)
+ void RenderWidgetHostViewGuest::SetActive(bool active) {
++  if (platform_view())
++    platform_view()->SetActive(active);
+ }
+ 
+ void RenderWidgetHostViewGuest::SetTakesFocusOnlyOnMouseDown(bool flag) {
++  if (platform_view())
++    platform_view()->SetTakesFocusOnlyOnMouseDown(flag);
+ }
+ 
+ void RenderWidgetHostViewGuest::SetWindowVisibility(bool visible) {
++  if (platform_view())
++    platform_view()->SetWindowVisibility(visible);
+ }
+ 
+ void RenderWidgetHostViewGuest::WindowFrameChanged() {
++  if (platform_view())
++    platform_view()->WindowFrameChanged();
+ }
+ 
+ void RenderWidgetHostViewGuest::ShowDefinitionForSelection() {
++  if (platform_view())
++    platform_view()->ShowDefinitionForSelection();
+ }
+ 
+ bool RenderWidgetHostViewGuest::SupportsSpeech() const {
+@@ -269,13 +432,21 @@ void RenderWidgetHostViewGuest::StopSpeaking() {
+ }
+ 
+ void RenderWidgetHostViewGuest::AboutToWaitForBackingStoreMsg() {
++  if (!enable_compositing_) {
++    if (platform_view())
++      platform_view()->AboutToWaitForBackingStoreMsg();
++  }
+ }
+ 
+ void RenderWidgetHostViewGuest::PluginFocusChanged(bool focused,
+                                                    int plugin_id) {
++  if (platform_view())
++    platform_view()->PluginFocusChanged(focused, plugin_id);
+ }
+ 
+ void RenderWidgetHostViewGuest::StartPluginIme() {
++  if (platform_view())
++    platform_view()->StartPluginIme();
+ }
+ 
+ bool RenderWidgetHostViewGuest::PostProcessEventForPluginIme(
+@@ -286,11 +457,16 @@ bool RenderWidgetHostViewGuest::PostProcessEventForPluginIme(
+ gfx::PluginWindowHandle
+ RenderWidgetHostViewGuest::AllocateFakePluginWindowHandle(
+     bool opaque, bool root) {
++  if (platform_view())
++    return platform_view()->AllocateFakePluginWindowHandle(opaque, root);
++
+   return 0;
+ }
+ 
+ void RenderWidgetHostViewGuest::DestroyFakePluginWindowHandle(
+     gfx::PluginWindowHandle window) {
++  if (platform_view())
++    return platform_view()->DestroyFakePluginWindowHandle(window);
+ }
+ 
+ void RenderWidgetHostViewGuest::AcceleratedSurfaceSetIOSurface(
+@@ -298,6 +474,12 @@ void RenderWidgetHostViewGuest::AcceleratedSurfaceSetIOSurface(
+     int32 width,
+     int32 height,
+     uint64 io_surface_identifier) {
++  if (!enable_compositing_) {
++    if (platform_view()) {
++      platform_view()->AcceleratedSurfaceSetIOSurface(window, width, height,
++          io_surface_identifier);
++    }
++  }
+ }
+ 
+ void RenderWidgetHostViewGuest::AcceleratedSurfaceSetTransportDIB(
+@@ -305,6 +487,12 @@ void RenderWidgetHostViewGuest::AcceleratedSurfaceSetTransportDIB(
+     int32 width,
+     int32 height,
+     TransportDIB::Handle transport_dib) {
++if (!enable_compositing_) {
++  if (platform_view()) {
++    platform_view()->AcceleratedSurfaceSetTransportDIB(
++        window, width, height, transport_dib);
++  }
++}
+ }
+ #endif  // defined(OS_MACOSX)
+ 
+@@ -364,6 +552,8 @@ void RenderWidgetHostViewGuest::WillWmDestroy() {
+ 
+ #if defined(OS_POSIX) || defined(USE_AURA)
+ void RenderWidgetHostViewGuest::GetScreenInfo(WebKit::WebScreenInfo* results) {
++  if (platform_view())
++    platform_view()->GetScreenInfo(results);
+ }
+ #endif  // defined(OS_POSIX) || defined(USE_AURA)
+ 
+diff --git a/content/browser/renderer_host/render_widget_host_view_guest.h b/content/browser/renderer_host/render_widget_host_view_guest.h
+index a58c0e7..90b3964 100644
+--- a/content/browser/renderer_host/render_widget_host_view_guest.h
++++ b/content/browser/renderer_host/render_widget_host_view_guest.h
+@@ -37,7 +37,9 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
+     : public RenderWidgetHostViewBase {
+  public:
+   RenderWidgetHostViewGuest(RenderWidgetHost* widget,
+-                            BrowserPluginGuest* guest);
++                            BrowserPluginGuest* guest,
++                            bool enable_compositing,
++                            RenderWidgetHostView* platform_view);
+   virtual ~RenderWidgetHostViewGuest();
+ 
+   // RenderWidgetHostView implementation.
+@@ -183,6 +185,8 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
+   friend class RenderWidgetHostView;
+ 
+  private:
++  RenderWidgetHostViewPort* platform_view() const;
++
+   // The model object.
+   RenderWidgetHostImpl* host_;
+ 
+@@ -191,6 +195,11 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
+ 
+   BrowserPluginGuest *guest_;
+   gfx::Size size_;
++  bool enable_compositing_;
++  // The platform view for this RenderWidgetHostView.
++  // If available (non NULL), all calls to this RenderWidgetHostView are
++  // forwarded to this |platform_view_|.
++  RenderWidgetHostViewPort* platform_view_;
+ 
+   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewGuest);
+ };
+diff --git a/content/browser/web_contents/web_contents_impl.cc b/content/browser/web_contents/web_contents_impl.cc
+index f88f9bd..3c9ca8e 100644
+--- a/content/browser/web_contents/web_contents_impl.cc
++++ b/content/browser/web_contents/web_contents_impl.cc
+@@ -852,6 +852,14 @@ RenderWidgetHostView* WebContentsImpl::GetRenderWidgetHostView() const {
+   return render_manager_.GetRenderWidgetHostView();
+ }
+ 
++RenderWidgetHostViewPort* WebContentsImpl::GetRenderWidgetHostViewPort() const {
++  BrowserPluginGuest* guest = GetBrowserPluginGuest();
++  if (guest && guest->embedder_web_contents()) {
++    return guest->embedder_web_contents()->GetRenderWidgetHostViewPort();
++  }
++  return RenderWidgetHostViewPort::FromRWHV(GetRenderWidgetHostView());
++}
++
+ WebContentsView* WebContentsImpl::GetView() const {
+   return view_.get();
+ }
+@@ -1173,19 +1181,45 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
+   if (view_.get()) {
+     CHECK(render_view_host_delegate_view_);
+   } else {
+-    if (browser_plugin_guest_.get() &&
+-        CommandLine::ForCurrentProcess()->HasSwitch(
+-            switches::kEnableBrowserPluginCompositing)) {
++    WebContentsViewDelegate* delegate =
++        GetContentClient()->browser()->GetWebContentsViewDelegate(this);
++
++    WebContentsView* platform_view = NULL;
++    bool enable_browser_plugin_compositing = false;
++    bool enable_browser_plugin_guest_views = false;
++    if (browser_plugin_guest_.get()) {
++      enable_browser_plugin_compositing =
++          CommandLine::ForCurrentProcess()->HasSwitch(
++              switches::kEnableBrowserPluginCompositing);
++      enable_browser_plugin_guest_views = enable_browser_plugin_compositing ||
++          CommandLine::ForCurrentProcess()->HasSwitch(
++              switches::kEnableBrowserPluginGuestViews);
++    }
++
++    if (enable_browser_plugin_guest_views) {
++        //||
++//        enable_browser_plugin_compositing) {
++      // Creates a WebContentsViewGuest.
++      //if (!enable_browser_plugin_compositing) {
++        // TODO(alexst, lazyboy): Ideally wrapping |platform_view| inside
++        // WebContentsViewGuest can work with kEnableBrowserPluginCompositing,
++        // but compositing is still work in progress for all platforms for
++        // browser plugin.
++        platform_view = CreateWebContentsView(
++            this, delegate, &render_view_host_delegate_view_);
++      //}
++
+       WebContentsViewGuest* rv = new WebContentsViewGuest(
+           this,
+-          browser_plugin_guest_.get());
++          browser_plugin_guest_.get(),
++          enable_browser_plugin_compositing,
++          platform_view);
+       render_view_host_delegate_view_ = rv;
+       view_.reset(rv);
+-    } else {
+-      WebContentsViewDelegate* delegate =
+-          GetContentClient()->browser()->GetWebContentsViewDelegate(this);
+-      view_.reset(CreateWebContentsView(
+-          this, delegate, &render_view_host_delegate_view_));
++    } else {  // Regular WebContentsView.
++      platform_view = CreateWebContentsView(
++          this, delegate, &render_view_host_delegate_view_);
++      view_.reset(platform_view);
+     }
+     CHECK(render_view_host_delegate_view_);
+   }
+@@ -1491,11 +1525,10 @@ void WebContentsImpl::ShowCreatedWidget(int route_id,
+       RenderWidgetHostViewPort::FromRWHV(GetCreatedWidget(route_id));
+   if (!widget_host_view)
+     return;
+-  if (is_fullscreen) {
+-    widget_host_view->InitAsFullscreen(GetRenderWidgetHostView());
+-  } else {
+-    widget_host_view->InitAsPopup(GetRenderWidgetHostView(), initial_pos);
+-  }
++  if (is_fullscreen)
++    widget_host_view->InitAsFullscreen(GetRenderWidgetHostViewPort());
++  else
++    widget_host_view->InitAsPopup(GetRenderWidgetHostViewPort(), initial_pos);
+ 
+   RenderWidgetHostImpl* render_widget_host_impl =
+       RenderWidgetHostImpl::From(widget_host_view->GetRenderWidgetHost());
+@@ -3448,11 +3481,11 @@ RenderViewHostImpl* WebContentsImpl::GetRenderViewHostImpl() {
+   return static_cast<RenderViewHostImpl*>(GetRenderViewHost());
+ }
+ 
+-BrowserPluginGuest* WebContentsImpl::GetBrowserPluginGuest() {
++BrowserPluginGuest* WebContentsImpl::GetBrowserPluginGuest() const {
+   return browser_plugin_guest_.get();
+ }
+ 
+-BrowserPluginEmbedder* WebContentsImpl::GetBrowserPluginEmbedder() {
++BrowserPluginEmbedder* WebContentsImpl::GetBrowserPluginEmbedder() const {
+   return browser_plugin_embedder_.get();
+ }
+ 
+diff --git a/content/browser/web_contents/web_contents_impl.h b/content/browser/web_contents/web_contents_impl.h
+index d060755..18c6f83 100644
+--- a/content/browser/web_contents/web_contents_impl.h
++++ b/content/browser/web_contents/web_contents_impl.h
+@@ -51,6 +51,7 @@ class RenderViewHost;
+ class RenderViewHostDelegateView;
+ class RenderViewHostImpl;
+ class RenderWidgetHostImpl;
++class RenderWidgetHostViewPort;
+ class SavePackage;
+ class SessionStorageNamespaceImpl;
+ class SiteInstance;
+@@ -170,10 +171,10 @@ class CONTENT_EXPORT WebContentsImpl
+ 
+   // Returns guest browser plugin object, or NULL if this WebContents is not a
+   // guest.
+-  BrowserPluginGuest* GetBrowserPluginGuest();
++  BrowserPluginGuest* GetBrowserPluginGuest() const;
+   // Returns embedder browser plugin object, or NULL if this WebContents is not
+   // an embedder.
+-  BrowserPluginEmbedder* GetBrowserPluginEmbedder();
++  BrowserPluginEmbedder* GetBrowserPluginEmbedder() const;
+ 
+   // Gets the current fullscreen render widget's routing ID. Returns
+   // MSG_ROUTING_NONE when there is no fullscreen render widget.
+@@ -665,6 +666,10 @@ class CONTENT_EXPORT WebContentsImpl
+   // called once as this call also removes it from the internal map.
+   WebContentsImpl* GetCreatedWindow(int route_id);
+ 
++  // Returns the RenderWidgetHostView that is associated with a native window
++  // and can be used in showing created widgets.
++  RenderWidgetHostViewPort* GetRenderWidgetHostViewPort() const;
++
+   // Misc non-view stuff -------------------------------------------------------
+ 
+   // Helper functions for sending notifications.
+diff --git a/content/browser/web_contents/web_contents_view_guest.cc b/content/browser/web_contents/web_contents_view_guest.cc
+index a76693c..b29143b 100644
+--- a/content/browser/web_contents/web_contents_view_guest.cc
++++ b/content/browser/web_contents/web_contents_view_guest.cc
+@@ -5,6 +5,7 @@
+ #include "content/browser/web_contents/web_contents_view_guest.h"
+ 
+ #include "build/build_config.h"
++#include "content/browser/browser_plugin/browser_plugin_guest.h"
+ #include "content/browser/renderer_host/render_view_host_factory.h"
+ #include "content/browser/renderer_host/render_view_host_impl.h"
+ #include "content/browser/renderer_host/render_widget_host_view_guest.h"
+@@ -24,9 +25,13 @@ namespace content {
+ 
+ WebContentsViewGuest::WebContentsViewGuest(
+     WebContentsImpl* web_contents,
+-    BrowserPluginGuest* guest)
++    BrowserPluginGuest* guest,
++    bool enable_compositing,
++    WebContentsView* platform_view)
+     : web_contents_(web_contents),
+-      guest_(guest) {
++      guest_(guest),
++      enable_compositing_(enable_compositing),
++      platform_view_(platform_view) {
+ }
+ 
+ WebContentsViewGuest::~WebContentsViewGuest() {
+@@ -35,6 +40,8 @@ WebContentsViewGuest::~WebContentsViewGuest() {
+ void WebContentsViewGuest::CreateView(const gfx::Size& initial_size,
+                                       gfx::NativeView context) {
+   requested_size_ = initial_size;
++  if (platform_view())
++    platform_view()->CreateView(initial_size, context);
+ }
+ 
+ RenderWidgetHostView* WebContentsViewGuest::CreateViewForWidget(
+@@ -49,9 +56,15 @@ RenderWidgetHostView* WebContentsViewGuest::CreateViewForWidget(
+     return render_widget_host->GetView();
+   }
+ 
++  RenderWidgetHostView* platform_widget = NULL;
++  if (platform_view())
++    platform_widget = platform_view()->CreateViewForWidget(render_widget_host);
++
+   RenderWidgetHostView* view = new RenderWidgetHostViewGuest(
+       render_widget_host,
+-      guest_);
++      guest_,
++      enable_compositing_,
++      platform_widget);
+ 
+   return view;
+ }
+@@ -62,6 +75,7 @@ RenderWidgetHostView* WebContentsViewGuest::CreateViewForPopupWidget(
+ }
+ 
+ gfx::NativeView WebContentsViewGuest::GetNativeView() const {
++  // Required for Win.
+   return NULL;
+ }
+ 
+@@ -73,34 +87,56 @@ gfx::NativeView WebContentsViewGuest::GetContentNativeView() const {
+ }
+ 
+ gfx::NativeWindow WebContentsViewGuest::GetTopLevelNativeWindow() const {
+-  return NULL;
++  return guest_->embedder_web_contents()->GetView()->GetTopLevelNativeWindow();
+ }
+ 
+ void WebContentsViewGuest::GetContainerBounds(gfx::Rect* out) const {
++  if (platform_view()) {
++    platform_view()->GetContainerBounds(out);
++    return;
++  }
+   out->SetRect(0, 0, requested_size_.width(), requested_size_.height());
+ }
+ 
++// TODO(lazyboy): Remove all if (platform_view()) checks.
+ void WebContentsViewGuest::SizeContents(const gfx::Size& size) {
+-  requested_size_ = size;
+-  RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
+-  if (rwhv)
+-    rwhv->SetSize(size);
++  if (platform_view()) {
++    platform_view()->SizeContents(size);
++  }
++  if (enable_compositing_) {
++    requested_size_ = size;
++    RenderWidgetHostView* rwhv = web_contents_->GetRenderWidgetHostView();
++    if (rwhv)
++      rwhv->SetSize(size);
++  }
+ }
+ 
+ void WebContentsViewGuest::SetInitialFocus() {
+-  if (web_contents_->FocusLocationBarByDefault())
+-    web_contents_->SetFocusToLocationBar(false);
+-  else
+-    Focus();
++  if (platform_view()) {
++    platform_view()->SetInitialFocus();
++    return;
++  }
++
++//  if (web_contents_->FocusLocationBarByDefault())
++//    web_contents_->SetFocusToLocationBar(false);
++//  else
++//    Focus();
+ }
+ 
+ gfx::Rect WebContentsViewGuest::GetViewBounds() const {
++  if (platform_view()) {
++    return platform_view()->GetViewBounds();
++  }
++
++  NOTREACHED();
+   gfx::Rect rect(0, 0, requested_size_.width(), requested_size_.height());
+   return rect;
+ }
+ 
+ #if defined(OS_MACOSX)
+ void WebContentsViewGuest::SetAllowOverlappingViews(bool overlapping) {
++  if (platform_view())
++    platform_view()->SetAllowOverlappingViews(overlapping);
+ }
+ #endif
+ 
+@@ -109,6 +145,8 @@ WebContents* WebContentsViewGuest::web_contents() {
+ }
+ 
+ void WebContentsViewGuest::RenderViewCreated(RenderViewHost* host) {
++  if (platform_view())
++    platform_view()->RenderViewCreated(host);
+ }
+ 
+ bool WebContentsViewGuest::IsEventTracking() const {
+@@ -116,6 +154,12 @@ bool WebContentsViewGuest::IsEventTracking() const {
+ }
+ 
+ void WebContentsViewGuest::RestoreFocus() {
++  if (platform_view()) {
++    platform_view()->RestoreFocus();
++    return;
++  }
++
++  NOTREACHED();
+   SetInitialFocus();
+ }
+ 
+@@ -127,9 +171,13 @@ void WebContentsViewGuest::OnTabCrashed(base::TerminationStatus status,
+ }
+ 
+ void WebContentsViewGuest::Focus() {
++  if (platform_view())
++    platform_view()->Focus();
+ }
+ 
+ void WebContentsViewGuest::StoreFocus() {
++  if (platform_view())
++    platform_view()->StoreFocus();
+ }
+ 
+ WebDropData* WebContentsViewGuest::GetDropData() const {
+diff --git a/content/browser/web_contents/web_contents_view_guest.h b/content/browser/web_contents/web_contents_view_guest.h
+index 179d36c..5d77bbc 100644
+--- a/content/browser/web_contents/web_contents_view_guest.h
++++ b/content/browser/web_contents/web_contents_view_guest.h
+@@ -29,7 +29,9 @@ class CONTENT_EXPORT WebContentsViewGuest
+   // |wrapper| which creates an intermediary widget layer for features from the
+   // Embedding layer that lives with the WebContentsView.
+   WebContentsViewGuest(WebContentsImpl* web_contents,
+-                       BrowserPluginGuest* guest);
++                       BrowserPluginGuest* guest,
++                       bool enable_compositing,
++                       WebContentsView* platform_view);
+   virtual ~WebContentsViewGuest();
+ 
+   WebContents* web_contents();
+@@ -84,11 +86,17 @@ class CONTENT_EXPORT WebContentsViewGuest
+   virtual void TakeFocus(bool reverse) OVERRIDE;
+ 
+  private:
++  WebContentsView* platform_view() const { return platform_view_; }
+ 
+   // The WebContentsImpl whose contents we display.
+   WebContentsImpl* web_contents_;
+   gfx::Size requested_size_;
+   BrowserPluginGuest* guest_;
++  bool enable_compositing_;
++  // The platform dependent view backing this WebContentsView.
++  // If available (non NULL), all calls to this WebContentsView are forwarded to
++  // this view.
++  WebContentsView* platform_view_;
+ 
+   DISALLOW_COPY_AND_ASSIGN(WebContentsViewGuest);
+ };
+diff --git a/content/public/common/content_switches.cc b/content/public/common/content_switches.cc
+index 8c2986f..b51ba99 100644
+--- a/content/public/common/content_switches.cc
++++ b/content/public/common/content_switches.cc
+@@ -262,6 +262,12 @@ const char kEnableBrowserPluginCompositing[] =
+ const char kEnableBrowserPluginForAllViewTypes[] =
+     "enable-browser-plugin-for-all-view-types";
+ 
++// Enables using experimental 'guest' view classes for browser plugin.
++// Browser plugin would use WebContentsViewGuest and RenderWidgetHostViewGuest,
++// which wraps the actual *View implementations.
++const char kEnableBrowserPluginGuestViews[] =
++    "enable-browser-plugin-guest-views";
++
+ // Enables the creation of compositing layers for fixed position elements.
+ const char kEnableCompositingForFixedPosition[] =
+      "enable-fixed-position-compositing";
+diff --git a/content/public/common/content_switches.h b/content/public/common/content_switches.h
+index 997d8a3..1602633 100644
+--- a/content/public/common/content_switches.h
++++ b/content/public/common/content_switches.h
+@@ -95,6 +95,7 @@ CONTENT_EXPORT extern const char kEnableAcceleratedFilters[];
+ extern const char kEnableAccessibilityLogging[];
+ CONTENT_EXPORT extern const char kEnableBrowserPluginCompositing[];
+ CONTENT_EXPORT extern const char kEnableBrowserPluginForAllViewTypes[];
++CONTENT_EXPORT extern const char kEnableBrowserPluginGuestViews[];
+ CONTENT_EXPORT extern const char kEnableCompositingForFixedPosition[];
+ CONTENT_EXPORT extern const char kEnableCssShaders[];
+ CONTENT_EXPORT extern const char kEnableDeviceMotion[];
