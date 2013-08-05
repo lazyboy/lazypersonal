@@ -31,8 +31,10 @@ if(typeof window.plugin !== 'function') window.plugin = function() {};
 
 // use own namespace for plugin
 window.plugin.keymanagement = function() {};
+  
+var _currentDialog = undefined;
     
-window.plugin.keymanagement.show = function() {
+window.plugin.keymanagement.show = function(opt_sortBy, opt_lat, opt_lng) {
   var hasPortalsListPlugin = !!window.plugin.portalslist;
   var hasKeysPlugin = !!window.plugin.keys;
   
@@ -47,7 +49,22 @@ window.plugin.keymanagement.show = function() {
     return;
   }
   var portals = window.plugin.portalslist.listPortals;
-  portals.sort(function(a, b) { return a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1 });
+  var sortFunction;
+  if (!!opt_sortBy && opt_sortBy == 'distance') {  // sort by distance.
+    var myPosition = new L.LatLng(opt_lat, opt_lng);
+    var latLngSortFunction = function(a, b) {
+      var aLatLng = new L.LatLng(a.lat, a.lng);
+      var bLatLng = new L.LatLng(b.lat, b.lng);
+      var aDist = aLatLng.distanceTo(myPosition);
+      var bDist = bLatLng.distanceTo(myPosition);
+      return aDist < bDist ? -1 : 1;
+    };
+    sortFunction = latLngSortFunction;
+  } else {  // sort by name.
+    sortFunction = function(a, b) { return a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1 };
+  }
+
+  portals.sort(sortFunction);
   var n = portals.length;
   var html = '';
   $.each(portals, function(ind, portal) {
@@ -71,7 +88,12 @@ window.plugin.keymanagement.show = function() {
     //    TEAM_ENL : (currentPortal.team == 'RESISTANCE' ? TEAM_RES : TEAM_NONE);
     var team = currentPortal.team;
 
-    var html = '';
+    var sortJs = opt_sortBy == 'distance' ? '"window.plugin.keymanagement.show()"' : '"window.plugin.keymanagement.sortByDistance()"';
+    var label = opt_sortBy == 'distance' ? 'Sort by name' : 'Sort by distance';
+    var html = '<div style="float: right">' +
+        '<a onclick=' + sortJs + '>' + label + '</a>' +
+        '</div>' +
+        '<div style="clear: both"></div>';
     //html += '<div>[' + (idx+1) + ' of ' + n + ']</div>';
     html += '<div id="plugin-keys-ext-count" style="font-size: 14px;">[' + keysCount + ']</div>';
     return html +
@@ -82,17 +104,18 @@ window.plugin.keymanagement.show = function() {
 //      '<img class="hide" src="' + img + '"/></div>' +
       '</div>';
   };
-  
-  dialog({
+
+  _currentDialog = dialog({
     html: '<div id="foobar">' + /*html + */'</div><div class="testing-class portaldetails" style="text-align: center">' +
           '<div style="font-size: 14px; font-family: \"coda\",arial,helvetica,sans-serif;">' + getPortalViewHtml(0) + '</div>' +
           '</div>',
     dialogClass: 'ui-dialog-portalslist',
     title: 'Portal list: ' + window.plugin.portalslist.listPortals.length + ' ' + (window.plugin.portalslist.listPortals.length == 1 ? 'portal' : 'portals'),
-    id: 'portal-list',
+    id: 'portal-list-key-only',
     width: 400,
     modal: true
   });
+  //debugger;
   var dialogs = $('.ui-modal');
   if (!dialogs.length) {
     alert('no dialog');
@@ -146,6 +169,31 @@ window.plugin.keymanagement.show = function() {
     else if (e.which == KEY_DN) { add(-1); e.preventDefault(); }
   };
   dialogs[0].addEventListener('keyup', keyHandler);
+};
+  
+var getCurrentDialog = function() {
+  //var dialogs = $('.ui-modal');
+  //if (!dialogs.length) return undefined;
+  //return dialogs[0];
+  //return $('portal-list-key-only').dialog;
+  return _currentDialog;
+};
+  
+window.plugin.keymanagement.sortByDistance = function() {
+  console.log('sortByDistance');
+  var onGotPosition = function(pos) {
+    var lat = pos.coords.latitude;
+    var lng = pos.coords.longitude;
+    console.log('lat = ' + lat + ', lng = ' + lng);
+    var myPosition = new L.LatLng(lat, lng);
+    var dialog = getCurrentDialog();
+    if (dialog) { dialog.dialog('close'); }
+    window.plugin.keymanagement.show('distance', lat, lng);
+  };
+  var onPositionError = function() {
+    console.log('onPositionError');
+  };
+  navigator.geolocation.getCurrentPosition(onGotPosition, onPositionError);
 };
 
 var setup =  function() {
