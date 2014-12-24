@@ -1,0 +1,57 @@
+<!--
+ * Copyright 2014 The Chromium Authors. All rights reserved.  Use of this
+ * source code is governed by a BSD-style license that can be found in the
+ * LICENSE file.
+-->
+<!doctype html>
+<html ng-csp="">
+<head>
+  <link rel="stylesheet" href="css/angular-csp.css"/>
+</head>
+<body>
+  <div>App</div>
+  <!--
+  <div data-ng-controller="cTestController">
+    <ul>
+      <li data-ng-repeat="row in rows">
+        <div>{{row.title}}</div>
+      </li>
+    </ul>
+  </div>
+  -->
+
+  <script src="js/angular-1.3.5.min.js"></script>
+  <script src="js/models.js"></script>
+  <script src="js/main.js"></script>
+
+  <div ng-app="cTestAppNew">
+    {{'hello' + 'world'}}
+    <div ng-controller="cTestController as con">
+      <div>
+        {{con.test}}
+      </div>
+    </div>
+  </div>
+
+  <div ng-app="AnotherApp" id="another-app"
+       ng-controller="AnotherController as con">
+    <div>Controller value: {{con.value}}</div>
+
+    <div ng-controller="EditTest as con">
+      <ul data-ng-repeat="contact in contacts"
+           data-ng-include="'html/contact-detail.html'"
+           ng-show="isViewCurrentView()">
+      </ul>
+      <!--
+      <div data-ng-repeat="jsonDetail in data"
+           data-ng-include="'html/json-detail.html'">
+      </div>
+      -->
+    </div>
+    <div ng-controller="SingleContactDetailController as con"
+         ng-show="isViewCurrentView()">
+      <div data-ng-include="'html/single-contact.html'"></div>
+    </div>
+  </div>
+</body>
+</html>

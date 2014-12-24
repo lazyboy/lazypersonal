@@ -1,0 +1,14 @@
+<div data-ng-show="!jsonDetail.editing">
+  <span>Name: </span>
+  <span>{{jsonDetail.name}}</span>
+  <span>Title: </span>
+  <span>{{jsonDetail.title}}</span>
+  <div ng-click="openEdit($index)">Edit</div>
+</div>
+<div data-ng-show="jsonDetail.editing">
+  <span>Name: </span>
+  <input ng-model="jsonDetail.name"/>
+  <span>Title: </span>
+  <input ng-model="jsonDetail.title"/>
+  <div ng-click="closeEdit($index)">XXX</div>
+</div>
