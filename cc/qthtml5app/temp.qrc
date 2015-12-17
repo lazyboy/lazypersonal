@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/new/prefix1">
+        <file alias="util.js">html/util.js</file>
+    </qresource>
+</RCC>
